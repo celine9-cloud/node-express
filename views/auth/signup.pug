@@ -1,0 +1,31 @@
+extends ../layout
+
+block content
+  .page-shell.narrow
+    h1 회원가입
+    p.description 장부 서비스 이용을 위한 기본 계정을 만듭니다.
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.card-form(method='post', action='/auth/signup')
+      label
+        | 이메일
+        input(type='email', name='email', value=values.email || '', required, autocomplete='email')
+      label
+        | 이름
+        input(type='text', name='name', value=values.name || '', required, autocomplete='name')
+      label
+        | 상호명
+        input(type='text', name='businessName', value=values.businessName || '', autocomplete='organization')
+      label
+        | 비밀번호
+        input(type='password', name='password', required, minlength='8', autocomplete='new-password')
+      button.primary-button(type='submit') 가입하고 고객정보 입력하기
+
+    p.muted
+      | 이미 계정이 있나요?
+      |
+      a(href='/auth/login') 로그인

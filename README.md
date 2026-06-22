@@ -20,6 +20,42 @@ npm run playwright:install
 npm start
 ```
 
+## 사용자 화면: 회원가입, 로그인, 고객정보, 카드 결제
+
+서버 실행 후 다음 화면을 사용할 수 있습니다.
+
+```text
+http://localhost:3000/auth/signup
+http://localhost:3000/auth/login
+http://localhost:3000/checkout
+```
+
+기본 흐름:
+
+1. `/auth/signup`에서 회원가입
+2. `/checkout/customer`에서 고객정보 입력
+3. `/checkout/payment`에서 테스트 카드 결제
+4. `/checkout`에서 최근 결제 내역 확인
+
+앱 DB는 기본적으로 `data/app.sqlite`에 저장됩니다.
+
+```env
+APP_DB_PATH=data/app.sqlite
+SESSION_SECRET=change-this-long-random-secret
+```
+
+카드 결제 화면은 실제 과금이 없는 테스트 승인 화면입니다. 카드번호는 서버에 저장하지 않고, 결제 기록에는
+카드 브랜드와 끝 4자리만 저장합니다. 실제 서비스에서는 Toss Payments, PortOne, NICE Payments 같은
+PG사의 결제창 또는 카드 토큰 SDK로 교체해야 합니다.
+
+테스트 입력 예:
+
+```text
+카드번호: 4242 4242 4242 4242
+유효기간: 미래 MM/YY
+CVC: 임의 3자리
+```
+
 ## 여신금융협회 카드매출 수집 샘플
 
 `scripts/scrape-creditfinance.js`는 여신금융협회 가맹점 매출거래정보 통합조회시스템

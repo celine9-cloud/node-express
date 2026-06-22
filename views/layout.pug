@@ -4,4 +4,16 @@ html
     title= title
     link(rel='stylesheet', href='/stylesheets/style.css')
   body
+    header.site-header
+      a.brand(href='/') 자영업 장부
+      nav.site-nav
+        a(href='/sales') 매출 장부
+        if currentUser
+          a(href='/checkout') 내 서비스
+          span.nav-user #{currentUser.name}님
+          form.inline-form(method='post', action='/auth/logout')
+            button.link-button(type='submit') 로그아웃
+        else
+          a(href='/auth/login') 로그인
+          a.button-link(href='/auth/signup') 회원가입
     block content

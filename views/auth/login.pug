@@ -1,0 +1,26 @@
+extends ../layout
+
+block content
+  .page-shell.narrow
+    h1 로그인
+    p.description 저장된 고객정보와 결제 기록을 확인하려면 로그인하세요.
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.card-form(method='post', action='/auth/login')
+      input(type='hidden', name='next', value=values.next || '')
+      label
+        | 이메일
+        input(type='email', name='email', value=values.email || '', required, autocomplete='email')
+      label
+        | 비밀번호
+        input(type='password', name='password', required, autocomplete='current-password')
+      button.primary-button(type='submit') 로그인
+
+    p.muted
+      | 계정이 없나요?
+      |
+      a(href='/auth/signup') 회원가입
