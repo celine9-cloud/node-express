@@ -28,6 +28,7 @@ npm start
 http://localhost:3000/auth/signup
 http://localhost:3000/auth/login
 http://localhost:3000/checkout
+http://localhost:3000/integrations
 ```
 
 기본 흐름:
@@ -35,7 +36,8 @@ http://localhost:3000/checkout
 1. `/auth/signup`에서 회원가입
 2. `/checkout/customer`에서 고객정보 입력
 3. `/checkout/payment`에서 테스트 카드 결제
-4. `/checkout`에서 최근 결제 내역 확인
+4. 결제 완료 후 `/integrations`에서 여신금융협회와 배달앱 계정 연동
+5. `/checkout`에서 최근 결제 내역 확인
 
 앱 DB는 기본적으로 `data/app.sqlite`에 저장됩니다.
 
@@ -47,6 +49,11 @@ SESSION_SECRET=change-this-long-random-secret
 카드 결제 화면은 실제 과금이 없는 테스트 승인 화면입니다. 카드번호는 서버에 저장하지 않고, 결제 기록에는
 카드 브랜드와 끝 4자리만 저장합니다. 실제 서비스에서는 Toss Payments, PortOne, NICE Payments 같은
 PG사의 결제창 또는 카드 토큰 SDK로 교체해야 합니다.
+
+연동 화면은 Tailwind CSS 기반 카드 UI로 구성되어 있습니다. 여신금융협회, 배달의민족, 요기요, 쿠팡이츠
+계정 입력 카드와 `연동 완료`/`연동 필요` 인디케이터를 보여줍니다. 이 프로토타입은 비밀번호를 저장하지
+않고, 입력 완료 상태와 마스킹된 아이디만 저장합니다. 실제 서비스에서는 공식 API, OAuth, KMS 암호화,
+비밀정보 전용 저장소를 검토해야 합니다.
 
 테스트 입력 예:
 

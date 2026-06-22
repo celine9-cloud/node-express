@@ -4,6 +4,7 @@ html
     title= title
     meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    block extraHead
   body
     .app-frame
       header.site-header
@@ -14,6 +15,7 @@ html
           a(href='/sales') 장부
           if currentUser
             a(href='/checkout') 내 서비스
+            a(href='/integrations') 연동
             span.nav-user #{currentUser.name}님
             form.inline-form(method='post', action='/auth/logout')
               button.link-button(type='submit') 로그아웃

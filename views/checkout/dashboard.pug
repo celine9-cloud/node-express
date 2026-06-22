@@ -23,6 +23,11 @@ block content
         strong 카드 결제
         p.muted 실제 과금 없이 결제 승인 화면 흐름만 확인합니다.
         a.button-link(href='/checkout/payment') 카드 결제하기
+      .summary-card
+        span.label 데이터 연동
+        strong 서비스 연결
+        p.muted 여신금융협회와 배달앱 계정을 연결합니다.
+        a.button-link(href='/integrations') 연동 관리하기
 
     h2 최근 결제 기록
     if payments.length

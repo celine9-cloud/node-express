@@ -56,8 +56,21 @@ function openAppDatabase(dbPath = resolveAppDbPath()) {
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
+    CREATE TABLE IF NOT EXISTS integration_accounts (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      provider_key TEXT NOT NULL,
+      login_id_masked TEXT NOT NULL,
+      status TEXT NOT NULL DEFAULT 'connected',
+      connected_at TEXT,
+      updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(user_id, provider_key)
+    );
+
     CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
     CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at);
+    CREATE INDEX IF NOT EXISTS idx_integration_accounts_user_id ON integration_accounts(user_id);
   `);
 
   return db;
@@ -65,6 +78,27 @@ function openAppDatabase(dbPath = resolveAppDbPath()) {
 
 function sanitizeEmail(email) {
   return String(email || '').trim().toLowerCase();
+}
+
+function maskLoginId(value) {
+  const text = String(value || '').trim();
+
+  if (!text) {
+    return '';
+  }
+
+  if (text.includes('@')) {
+    const parts = text.split('@');
+    const name = parts[0];
+    const domain = parts.slice(1).join('@');
+    return `${name.slice(0, 2)}${'*'.repeat(Math.max(name.length - 2, 2))}@${domain}`;
+  }
+
+  if (text.length <= 3) {
+    return `${text[0]}**`;
+  }
+
+  return `${text.slice(0, 2)}${'*'.repeat(Math.max(text.length - 4, 3))}${text.slice(-2)}`;
 }
 
 function publicUser(row) {
@@ -335,6 +369,72 @@ function listPayments(userId, limit = 10) {
   }
 }
 
+function listIntegrationAccounts(userId) {
+  const db = openAppDatabase();
+
+  try {
+    return db
+      .prepare(
+        `
+          SELECT
+            provider_key AS providerKey,
+            login_id_masked AS loginIdMasked,
+            status,
+            connected_at AS connectedAt,
+            updated_at AS updatedAt
+          FROM integration_accounts
+          WHERE user_id = ?
+        `
+      )
+      .all(userId)
+      .reduce((map, row) => {
+        map[row.providerKey] = row;
+        return map;
+      }, {});
+  } finally {
+    db.close();
+  }
+}
+
+function upsertIntegrationAccount(userId, input) {
+  const db = openAppDatabase();
+  const now = new Date().toISOString();
+
+  try {
+    db.prepare(
+      `
+        INSERT INTO integration_accounts (
+          user_id,
+          provider_key,
+          login_id_masked,
+          status,
+          connected_at
+        ) VALUES (
+          @userId,
+          @providerKey,
+          @loginIdMasked,
+          'connected',
+          @connectedAt
+        )
+        ON CONFLICT(user_id, provider_key) DO UPDATE SET
+          login_id_masked = excluded.login_id_masked,
+          status = 'connected',
+          connected_at = excluded.connected_at,
+          updated_at = CURRENT_TIMESTAMP
+      `
+    ).run({
+      userId,
+      providerKey: input.providerKey,
+      loginIdMasked: maskLoginId(input.loginId),
+      connectedAt: now,
+    });
+  } finally {
+    db.close();
+  }
+
+  return listIntegrationAccounts(userId)[input.providerKey];
+}
+
 module.exports = {
   createPayment,
   createUser,
@@ -342,8 +442,11 @@ module.exports = {
   getCustomerProfile,
   getPaymentById,
   listPayments,
+  listIntegrationAccounts,
+  maskLoginId,
   openAppDatabase,
   resolveAppDbPath,
+  upsertIntegrationAccount,
   upsertCustomerProfile,
   verifyUser,
 };

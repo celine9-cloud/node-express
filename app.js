@@ -11,6 +11,7 @@ var appRepository = require('./db/appRepository');
 var authRouter = require('./routes/auth');
 var checkoutRouter = require('./routes/checkout');
 var indexRouter = require('./routes/index');
+var integrationsRouter = require('./routes/integrations');
 var salesRouter = require('./routes/sales');
 var usersRouter = require('./routes/users');
 
@@ -44,6 +45,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/auth', authRouter);
 app.use('/checkout', checkoutRouter);
+app.use('/integrations', integrationsRouter);
 app.use('/sales', salesRouter);
 app.use('/users', usersRouter);
 

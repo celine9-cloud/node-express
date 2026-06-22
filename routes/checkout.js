@@ -217,7 +217,7 @@ router.post('/payment', function(req, res, next) {
       cardLast4: cardNumber.slice(-4),
     });
 
-    res.redirect('/checkout/payment/' + payment.id);
+    res.redirect('/integrations?paymentId=' + encodeURIComponent(payment.id));
   } catch (error) {
     next(error);
   }
