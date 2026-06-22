@@ -101,10 +101,39 @@ npm run scrape:creditfinance -- --no-db
 npm run import:sales -- data/card-sales/creditfinance-sales-2026-06-22.json
 ```
 
+먼저 실제 컬럼명이 어떻게 잡혔는지 보고 싶으면 다음 명령을 실행합니다.
+
+```bash
+npm run inspect:sales -- data/card-sales/creditfinance-sales-2026-06-22.json
+```
+
+이 명령은 JSON 안의 컬럼 목록과 현재 DB 매핑 결과를 보여줍니다. 값이 `(empty)`로 나오면 아래 alias
+환경변수에 실제 컬럼명을 추가하면 됩니다.
+
 DB 경로는 기본적으로 `data/ledger.sqlite`입니다. 바꾸고 싶으면 `.env`에 설정합니다.
 
 ```env
 SALES_DB_PATH=data/ledger.sqlite
+```
+
+실제 파일의 컬럼명이 기본 매핑과 다르면 `.env`에서 후보 컬럼명을 추가합니다. 쉼표로 여러 이름을 넣을 수
+있고, 앞에 적은 이름일수록 우선 사용됩니다.
+
+```env
+SALES_TRANSACTION_DATE_ALIASES=승인거래일자,거래일시
+SALES_SETTLEMENT_DATE_ALIASES=입금예정일,대금지급일자
+SALES_CARD_COMPANY_ALIASES=카드사명,매입카드사
+SALES_APPROVAL_NUMBER_ALIASES=승인번호,전표번호
+SALES_MERCHANT_NUMBER_ALIASES=가맹점번호
+SALES_APPROVAL_AMOUNT_ALIASES=승인금액,매출금액
+SALES_FEE_AMOUNT_ALIASES=수수료,가맹점수수료
+SALES_DEPOSIT_AMOUNT_ALIASES=실입금액,지급금액
+```
+
+컬럼명이 더 많거나 JSON으로 관리하고 싶으면 다음처럼 한 번에 지정할 수도 있습니다.
+
+```env
+SALES_FIELD_ALIASES_JSON={"transactionDate":["승인거래일자"],"approvalAmount":["총승인금액"]}
 ```
 
 ### 5. 장부 화면 확인

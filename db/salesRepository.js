@@ -6,14 +6,48 @@ const Database = require('better-sqlite3');
 const DEFAULT_DB_PATH = path.join(process.cwd(), 'data', 'ledger.sqlite');
 
 const FIELD_ALIASES = {
-  transactionDate: ['거래일자', '거래일', '승인일자', '승인일', '매출일자', '매출일', '결제일자', '일자', '날짜'],
-  settlementDate: ['입금일자', '입금일', '지급일자', '지급일', '입금예정일', '지급예정일'],
-  cardCompany: ['카드사', '카드사명', '매입카드사', '카드종류', '카드명'],
-  approvalNumber: ['승인번호', '매출번호', '거래번호'],
-  merchantNumber: ['가맹점번호', '가맹점 번호'],
-  approvalAmount: ['승인금액', '매출금액', '결제금액', '거래금액', '합계금액', '승인합계'],
-  feeAmount: ['수수료', '수수료액', '가맹점수수료', '수수료금액'],
-  depositAmount: ['실입금액', '입금액', '지급금액', '입금예정금액', '대금입금액', '정산금액'],
+  transactionDate: [
+    '거래일자',
+    '거래일',
+    '거래일시',
+    '승인거래일자',
+    '승인거래일시',
+    '승인일자',
+    '승인일',
+    '매출일자',
+    '매출일',
+    '결제일자',
+    '매입일자',
+    '일자',
+    '날짜',
+  ],
+  settlementDate: ['입금일자', '입금일', '지급일자', '지급일', '입금예정일', '지급예정일', '대금지급일자'],
+  cardCompany: ['카드사', '카드사명', '매입카드사', '매입사', '카드종류', '카드명', '발급사'],
+  approvalNumber: ['승인번호', '승인No', '승인NO', '매출번호', '거래번호', '전표번호'],
+  merchantNumber: ['가맹점번호', '가맹점 번호', '가맹점No', '가맹점NO', '가맹점ID'],
+  approvalAmount: [
+    '승인금액',
+    '매출금액',
+    '결제금액',
+    '거래금액',
+    '합계금액',
+    '승인합계',
+    '카드매출',
+    '총매출액',
+  ],
+  feeAmount: ['수수료', '수수료액', '가맹점수수료', '수수료금액', '공제금액'],
+  depositAmount: ['실입금액', '입금액', '지급금액', '실지급액', '입금예정금액', '대금입금액', '정산금액'],
+};
+
+const FIELD_ENV_NAMES = {
+  transactionDate: 'SALES_TRANSACTION_DATE_ALIASES',
+  settlementDate: 'SALES_SETTLEMENT_DATE_ALIASES',
+  cardCompany: 'SALES_CARD_COMPANY_ALIASES',
+  approvalNumber: 'SALES_APPROVAL_NUMBER_ALIASES',
+  merchantNumber: 'SALES_MERCHANT_NUMBER_ALIASES',
+  approvalAmount: 'SALES_APPROVAL_AMOUNT_ALIASES',
+  feeAmount: 'SALES_FEE_AMOUNT_ALIASES',
+  depositAmount: 'SALES_DEPOSIT_AMOUNT_ALIASES',
 };
 
 function normalizeKey(value) {
@@ -21,6 +55,42 @@ function normalizeKey(value) {
     .replace(/\s+/g, '')
     .replace(/[()[\]{}._/-]/g, '')
     .toLowerCase();
+}
+
+function parseAliasList(value) {
+  if (!value) {
+    return [];
+  }
+
+  return String(value)
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function parseAliasJson(value) {
+  if (!value) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(value);
+  } catch (error) {
+    return {};
+  }
+}
+
+function getFieldAliases(field, meta = {}) {
+  const jsonAliases = parseAliasJson(process.env.SALES_FIELD_ALIASES_JSON);
+  const envAliases = parseAliasList(process.env[FIELD_ENV_NAMES[field]]);
+  const metaAliases = meta.fieldAliases && Array.isArray(meta.fieldAliases[field]) ? meta.fieldAliases[field] : [];
+
+  return [
+    ...metaAliases,
+    ...(Array.isArray(jsonAliases[field]) ? jsonAliases[field] : []),
+    ...envAliases,
+    ...(FIELD_ALIASES[field] || []),
+  ];
 }
 
 function createKeyMap(row) {
@@ -97,14 +167,14 @@ function normalizeSalesRow(row, meta = {}) {
     source: meta.source || 'creditfinance',
     sourceUrl: meta.sourceUrl || '',
     collectedAt: meta.collectedAt || new Date().toISOString(),
-    transactionDate: parseDate(pickValue(row, FIELD_ALIASES.transactionDate)),
-    settlementDate: parseDate(pickValue(row, FIELD_ALIASES.settlementDate)),
-    cardCompany: String(pickValue(row, FIELD_ALIASES.cardCompany) || '').trim(),
-    approvalNumber: String(pickValue(row, FIELD_ALIASES.approvalNumber) || '').trim(),
-    merchantNumber: String(pickValue(row, FIELD_ALIASES.merchantNumber) || '').trim(),
-    approvalAmount: parseAmount(pickValue(row, FIELD_ALIASES.approvalAmount)),
-    feeAmount: parseAmount(pickValue(row, FIELD_ALIASES.feeAmount)),
-    depositAmount: parseAmount(pickValue(row, FIELD_ALIASES.depositAmount)),
+    transactionDate: parseDate(pickValue(row, getFieldAliases('transactionDate', meta))),
+    settlementDate: parseDate(pickValue(row, getFieldAliases('settlementDate', meta))),
+    cardCompany: String(pickValue(row, getFieldAliases('cardCompany', meta)) || '').trim(),
+    approvalNumber: String(pickValue(row, getFieldAliases('approvalNumber', meta)) || '').trim(),
+    merchantNumber: String(pickValue(row, getFieldAliases('merchantNumber', meta)) || '').trim(),
+    approvalAmount: parseAmount(pickValue(row, getFieldAliases('approvalAmount', meta))),
+    feeAmount: parseAmount(pickValue(row, getFieldAliases('feeAmount', meta))),
+    depositAmount: parseAmount(pickValue(row, getFieldAliases('depositAmount', meta))),
     rawJson,
     rawHash,
   };
@@ -326,6 +396,7 @@ function groupSalesByMonth(filters = {}) {
 
 module.exports = {
   FIELD_ALIASES,
+  getFieldAliases,
   getSalesSummary,
   groupSalesByDay,
   groupSalesByMonth,
