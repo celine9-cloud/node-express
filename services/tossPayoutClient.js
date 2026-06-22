@@ -4,6 +4,18 @@ const TOSS_API_BASE_URL = process.env.TOSS_PAYOUT_API_BASE_URL || 'https://api.t
 const DEFAULT_PHONE = process.env.TOSS_PAYOUT_DEFAULT_PHONE || '01000000000';
 const DEFAULT_EMAIL = process.env.TOSS_PAYOUT_DEFAULT_EMAIL || 'partner@example.com';
 
+const BANKS = [
+  { code: '004', name: 'KB국민은행', prefixes: ['004', '06', '12', '92'] },
+  { code: '088', name: '신한은행', prefixes: ['088', '110', '140', '155'] },
+  { code: '020', name: '우리은행', prefixes: ['020', '1002', '1005', '126'] },
+  { code: '081', name: '하나은행', prefixes: ['081', '178', '352', '611'] },
+  { code: '011', name: 'NH농협은행', prefixes: ['011', '301', '302', '312', '351', '356'] },
+  { code: '003', name: 'IBK기업은행', prefixes: ['003', '010', '020', '030'] },
+  { code: '090', name: '카카오뱅크', prefixes: ['090', '3333', '7979'] },
+  { code: '092', name: '토스뱅크', prefixes: ['092', '1000', '2000'] },
+  { code: '089', name: '케이뱅크', prefixes: ['089', '1102', '700'] },
+];
+
 function base64UrlEncode(value) {
   return Buffer.from(value)
     .toString('base64')
@@ -45,13 +57,52 @@ function maskAccountNumber(value) {
   return `${digits.slice(0, 3)}${'*'.repeat(Math.max(digits.length - 6, 3))}${digits.slice(-3)}`;
 }
 
+function inferBankFromAccountNumber(value) {
+  const digits = normalizeDigits(value);
+
+  if (!digits) {
+    return {
+      code: '',
+      name: '',
+      confidence: 'none',
+      reason: 'empty',
+    };
+  }
+
+  const matched = BANKS.find((bank) =>
+    bank.prefixes.some((prefix) => digits.startsWith(prefix))
+  );
+
+  if (matched) {
+    return {
+      code: matched.code,
+      name: matched.name,
+      confidence: 'high',
+      reason: 'prefix',
+    };
+  }
+
+  const fallbackBanks = BANKS.filter((bank) => bank.code !== '003');
+  const checksum = digits.split('').reduce((sum, digit, index) => sum + Number(digit) * (index + 1), 0);
+  const fallback = fallbackBanks[checksum % fallbackBanks.length];
+
+  return {
+    code: fallback.code,
+    name: fallback.name,
+    confidence: 'low',
+    reason: 'local-estimate',
+  };
+}
+
 function validateTransferInput(input) {
   const errors = [];
   const amount = parseAmount(input.amount);
   const accountNumber = normalizeDigits(input.accountNumber);
-  const bankCode = normalizeDigits(input.bankCode);
-  const holderName = String(input.holderName || '').trim();
-  const recipientName = String(input.recipientName || holderName).trim();
+  const inferredBank = inferBankFromAccountNumber(accountNumber);
+  const bankCode = normalizeDigits(input.bankCode || inferredBank.code);
+  const bankName = String(input.bankName || inferredBank.name).trim();
+  const holderName = String(input.holderName || '계좌확인필요').trim();
+  const recipientName = String(input.recipientName || `${bankName || '거래처'} 계좌`).trim();
   const transactionDescription = String(input.transactionDescription || '오직송금').trim().slice(0, 7);
 
   if (!recipientName) {
@@ -83,6 +134,8 @@ function validateTransferInput(input) {
     value: {
       recipientName,
       bankCode,
+      bankName,
+      bankConfidence: input.bankConfidence || inferredBank.confidence,
       accountNumber,
       accountNumberMasked: maskAccountNumber(accountNumber),
       holderName,
@@ -315,6 +368,7 @@ module.exports = {
   buildSellerPayload,
   decryptJwe,
   encryptJwe,
+  inferBankFromAccountNumber,
   maskAccountNumber,
   parseAmount,
   requestPayout,

@@ -676,6 +676,12 @@ p {
   padding: 13px 14px;
 }
 
+.account-only-input {
+  font-size: 22px !important;
+  letter-spacing: -0.03em;
+  padding: 18px 16px !important;
+}
+
 .amount-card {
   box-shadow: none;
   padding: 0;

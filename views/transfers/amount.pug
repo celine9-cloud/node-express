@@ -15,12 +15,13 @@ block content
         button.link-button(type='submit') 처음부터
 
     .recipient-pill
-      span= values.recipientName
-      b #{values.bankCode} · #{values.accountNumberMasked}
+      span= values.bankName
+      b #{values.accountNumberMasked}
 
     .flow-title
       p.eyebrow 입금 2단계
       h1 얼마를 보낼까요?
+      p.description #{values.bankConfidence === 'high' ? '계좌번호 패턴으로 은행을 찾았어요.' : '은행을 로컬 규칙으로 추정했어요. 실제 운영에서는 계좌 검증 API로 확인해야 합니다.'}
 
     if errors && errors.length
       ul.alert

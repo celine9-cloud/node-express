@@ -17,7 +17,10 @@ function emptyValues() {
   return {
     recipientName: '',
     bankCode: '',
+    bankName: '',
+    bankConfidence: '',
     accountNumber: '',
+    accountNumberMasked: '',
     holderName: '',
     amount: '',
     transactionDescription: '오직송금',
@@ -50,35 +53,23 @@ function formatValues(draft) {
 
 function validateRecipient(values) {
   var errors = [];
-  var bankCode = normalizeDigits(values.bankCode);
   var accountNumber = normalizeDigits(values.accountNumber);
-  var holderName = String(values.holderName || '').trim();
-  var recipientName = String(values.recipientName || holderName).trim();
-
-  if (!recipientName) {
-    errors.push('거래처명을 입력해 주세요.');
-  }
-
-  if (!bankCode || bankCode.length < 2 || bankCode.length > 3) {
-    errors.push('은행 코드는 2~3자리 숫자로 입력해 주세요.');
-  }
+  var inferredBank = tossPayoutClient.inferBankFromAccountNumber(accountNumber);
 
   if (!accountNumber || accountNumber.length < 8 || accountNumber.length > 20) {
     errors.push('계좌번호는 숫자 8~20자리로 입력해 주세요.');
   }
 
-  if (!holderName) {
-    errors.push('예금주명을 입력해 주세요.');
-  }
-
   return {
     errors: errors,
     value: {
-      recipientName: recipientName,
-      bankCode: bankCode,
+      recipientName: `${inferredBank.name || '거래처'} 계좌`,
+      bankCode: inferredBank.code,
+      bankName: inferredBank.name,
+      bankConfidence: inferredBank.confidence,
       accountNumber: accountNumber,
       accountNumberMasked: tossPayoutClient.maskAccountNumber(accountNumber),
-      holderName: holderName,
+      holderName: '계좌확인필요',
     },
   };
 }
@@ -149,11 +140,12 @@ function renderAmount(req, res, values, errors) {
   });
 }
 
-function renderConfirm(req, res) {
-  res.render('transfers/confirm', {
+function renderConfirm(req, res, errors) {
+  res.status(errors && errors.length ? 400 : 200).render('transfers/confirm', {
     title: '입금 확인',
     values: formatValues(transferDraft(req)),
     demoMode: demoMode(),
+    errors: errors || [],
     step: 3,
   });
 }
@@ -170,10 +162,7 @@ router.get('/recipient', function(req, res) {
 
 router.post('/recipient', function(req, res) {
   var values = {
-    recipientName: String(req.body.recipientName || '').trim(),
-    bankCode: String(req.body.bankCode || '').trim(),
     accountNumber: String(req.body.accountNumber || '').trim(),
-    holderName: String(req.body.holderName || '').trim(),
   };
   var result = validateRecipient(values);
 
@@ -222,7 +211,7 @@ router.get('/confirm', function(req, res) {
     return;
   }
 
-  renderConfirm(req, res);
+  renderConfirm(req, res, []);
 });
 
 router.post('/confirm', async function(req, res, next) {
@@ -231,6 +220,11 @@ router.post('/confirm', async function(req, res, next) {
   }
 
   try {
+    if (!demoMode()) {
+      renderConfirm(req, res, ['실제 지급대행은 예금주/셀러 KYC 검증 API 연동 후에만 요청할 수 있습니다.']);
+      return;
+    }
+
     var payoutResult = await tossPayoutClient.requestPayout(transferDraft(req));
 
     if (!payoutResult.ok) {
