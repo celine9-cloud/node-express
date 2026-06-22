@@ -73,9 +73,33 @@ function openAppDatabase(dbPath = resolveAppDbPath()) {
       UNIQUE(user_id, provider_key)
     );
 
+    CREATE TABLE IF NOT EXISTS transfer_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      recipient_name TEXT NOT NULL,
+      bank_code TEXT NOT NULL,
+      account_number_masked TEXT NOT NULL,
+      holder_name TEXT NOT NULL,
+      amount INTEGER NOT NULL,
+      transaction_description TEXT,
+      memo TEXT,
+      status TEXT NOT NULL,
+      provider TEXT NOT NULL DEFAULT 'tosspayments',
+      mode TEXT NOT NULL DEFAULT 'demo',
+      ref_seller_id TEXT,
+      ref_payout_id TEXT,
+      toss_seller_id TEXT,
+      toss_payout_id TEXT,
+      request_json TEXT,
+      response_json TEXT,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+    );
+
     CREATE INDEX IF NOT EXISTS idx_payments_user_id ON payments(user_id);
     CREATE INDEX IF NOT EXISTS idx_payments_created_at ON payments(created_at);
     CREATE INDEX IF NOT EXISTS idx_integration_accounts_user_id ON integration_accounts(user_id);
+    CREATE INDEX IF NOT EXISTS idx_transfer_requests_user_id ON transfer_requests(user_id);
+    CREATE INDEX IF NOT EXISTS idx_transfer_requests_created_at ON transfer_requests(created_at);
   `);
 
   ensureUserColumns(db);
@@ -518,6 +542,146 @@ function listIntegrationAccounts(userId) {
   }
 }
 
+function createTransferRequest(userId, input, result) {
+  const db = openAppDatabase();
+  const requestJson = JSON.stringify({
+    sellerPayload: result.sellerPayload,
+    payoutPayload: result.payoutPayload,
+  });
+  const responseJson = JSON.stringify(result.response || {});
+
+  try {
+    const insert = db.prepare(
+      `
+        INSERT INTO transfer_requests (
+          user_id,
+          recipient_name,
+          bank_code,
+          account_number_masked,
+          holder_name,
+          amount,
+          transaction_description,
+          memo,
+          status,
+          provider,
+          mode,
+          ref_seller_id,
+          ref_payout_id,
+          toss_seller_id,
+          toss_payout_id,
+          request_json,
+          response_json
+        ) VALUES (
+          @userId,
+          @recipientName,
+          @bankCode,
+          @accountNumberMasked,
+          @holderName,
+          @amount,
+          @transactionDescription,
+          @memo,
+          @status,
+          'tosspayments',
+          @mode,
+          @refSellerId,
+          @refPayoutId,
+          @tossSellerId,
+          @tossPayoutId,
+          @requestJson,
+          @responseJson
+        )
+      `
+    );
+    const saved = insert.run({
+      userId,
+      recipientName: input.recipientName,
+      bankCode: input.bankCode,
+      accountNumberMasked: result.accountNumberMasked,
+      holderName: input.holderName,
+      amount: input.amount,
+      transactionDescription: input.transactionDescription,
+      memo: input.memo,
+      status: result.status,
+      mode: result.mode,
+      refSellerId: result.refSellerId,
+      refPayoutId: result.refPayoutId,
+      tossSellerId: result.sellerId,
+      tossPayoutId: result.payoutId,
+      requestJson,
+      responseJson,
+    });
+
+    return getTransferRequestById(saved.lastInsertRowid);
+  } finally {
+    db.close();
+  }
+}
+
+function getTransferRequestById(id) {
+  const db = openAppDatabase();
+
+  try {
+    const row = db.prepare('SELECT * FROM transfer_requests WHERE id = ?').get(id);
+
+    if (!row) {
+      return null;
+    }
+
+    return {
+      id: row.id,
+      userId: row.user_id,
+      recipientName: row.recipient_name,
+      bankCode: row.bank_code,
+      accountNumberMasked: row.account_number_masked,
+      holderName: row.holder_name,
+      amount: row.amount,
+      transactionDescription: row.transaction_description || '',
+      memo: row.memo || '',
+      status: row.status,
+      provider: row.provider,
+      mode: row.mode,
+      refSellerId: row.ref_seller_id || '',
+      refPayoutId: row.ref_payout_id || '',
+      tossSellerId: row.toss_seller_id || '',
+      tossPayoutId: row.toss_payout_id || '',
+      createdAt: row.created_at,
+    };
+  } finally {
+    db.close();
+  }
+}
+
+function listTransferRequests(userId, limit = 10) {
+  const db = openAppDatabase();
+
+  try {
+    return db.prepare(
+      `
+        SELECT
+          id,
+          recipient_name AS recipientName,
+          bank_code AS bankCode,
+          account_number_masked AS accountNumberMasked,
+          holder_name AS holderName,
+          amount,
+          transaction_description AS transactionDescription,
+          status,
+          provider,
+          mode,
+          ref_payout_id AS refPayoutId,
+          toss_payout_id AS tossPayoutId,
+          created_at AS createdAt
+        FROM transfer_requests
+        WHERE user_id = ?
+        ORDER BY id DESC
+        LIMIT ?
+      `
+    ).all(userId, Math.min(Number(limit) || 10, 50));
+  } finally {
+    db.close();
+  }
+}
+
 function upsertIntegrationAccount(userId, input) {
   const db = openAppDatabase();
   const now = new Date().toISOString();
@@ -559,13 +723,16 @@ function upsertIntegrationAccount(userId, input) {
 
 module.exports = {
   createPayment,
+  createTransferRequest,
   createUser,
   findUserById,
   findOrCreateKakaoUser,
   getCustomerProfile,
   getPaymentById,
+  getTransferRequestById,
   listPayments,
   listIntegrationAccounts,
+  listTransferRequests,
   maskLoginId,
   openAppDatabase,
   resolveAppDbPath,

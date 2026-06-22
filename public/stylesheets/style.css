@@ -594,6 +594,14 @@ p {
   line-height: 1.2;
 }
 
+.transfer-result {
+  margin: 16px 0;
+}
+
+.transfer-result p {
+  margin-top: 8px;
+}
+
 table {
   background: var(--surface);
   border-collapse: separate;

@@ -31,6 +31,7 @@ http://localhost:3000/auth/login
 http://localhost:3000/auth/terms?provider=kakao
 http://localhost:3000/checkout
 http://localhost:3000/integrations
+http://localhost:3000/transfers
 ```
 
 기본 흐름:
@@ -40,7 +41,8 @@ http://localhost:3000/integrations
 3. `/checkout/customer`에서 고객정보 입력
 4. `/checkout/payment`에서 테스트 카드 결제
 5. 결제 완료 후 `/integrations`에서 여신금융협회와 배달앱 계정 연동
-6. `/checkout`에서 최근 결제 내역 확인
+6. `/transfers`에서 거래처 계좌와 금액으로 지급대행 송금 요청
+7. `/checkout`에서 최근 결제 내역 확인
 
 앱 DB는 기본적으로 `data/app.sqlite`에 저장됩니다.
 
@@ -54,6 +56,10 @@ WEATHER_CITY_NAME=서울
 WEATHER_LATITUDE=37.5665
 WEATHER_LONGITUDE=126.9780
 WEATHER_TIMEOUT_MS=1500
+TOSS_PAYOUT_DEMO_MODE=true
+TOSS_PAYOUT_API_BASE_URL=https://api.tosspayments.com
+TOSS_PAYOUT_SECRET_KEY=
+TOSS_PAYOUT_SECURITY_KEY=
 ```
 
 `KAKAO_CLIENT_ID`가 비어 있으면 로컬 개발용 카카오 데모 계정으로 로그인됩니다. 실제 카카오 로그인을
@@ -63,6 +69,23 @@ WEATHER_TIMEOUT_MS=1500
 홈 대시보드의 날씨 카드는 Open-Meteo API를 사용합니다. API 키 없이 현재 날씨를 가져올 수 있고,
 위치명/위도/경도는 `WEATHER_CITY_NAME`, `WEATHER_LATITUDE`, `WEATHER_LONGITUDE`로 바꿀 수 있습니다.
 날씨 API가 실패하면 화면에는 기본 안내 문구가 표시됩니다.
+
+거래처 송금 화면(`/transfers`)은 토스페이먼츠 지급대행 API 문서 구조를 참고합니다. 지급대행은 계좌번호로
+바로 송금하는 단일 API가 아니라, 거래처를 셀러로 등록한 뒤 해당 셀러에게 지급대행 요청을 보내는 흐름입니다.
+Request Body가 있는 지급대행 POST 요청은 `TossPayments-api-security-mode: ENCRYPTION` 헤더와 Basic 인증을
+사용하고, 보안 키로 JWE 암호화/복호화를 해야 합니다.
+
+기본값은 안전한 데모 모드입니다. 실제 외부 송금 요청을 보내려면 다음을 모두 설정해야 합니다.
+
+```env
+TOSS_PAYOUT_DEMO_MODE=false
+TOSS_PAYOUT_SECRET_KEY=...
+TOSS_PAYOUT_SECURITY_KEY=...
+```
+
+프로토타입 DB에는 전체 계좌번호를 저장하지 않고 마스킹된 계좌번호, 금액, 상태, 토스 지급대행 참조 ID만
+저장합니다. 실제 지급대행은 회수가 어려울 수 있으므로 운영 전 권한, 승인 절차, 이중 확인, 감사 로그,
+웹훅 기반 상태 동기화를 반드시 추가해야 합니다.
 
 카드 결제 화면은 실제 과금이 없는 테스트 승인 화면입니다. 카드번호는 서버에 저장하지 않고, 결제 기록에는
 카드 브랜드와 끝 4자리만 저장합니다. 실제 서비스에서는 Toss Payments, PortOne, NICE Payments 같은
