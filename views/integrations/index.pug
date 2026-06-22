@@ -26,10 +26,10 @@ block content
         div(class='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between')
           div
             if justPaid
-              div(class='mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-bold text-toss')
+              div(class='mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-toss')
                 span(class='h-2 w-2 rounded-full bg-toss')
                 | 결제가 완료됐어요
-            p(class='mb-3 text-sm font-extrabold text-calm') 결제 다음 단계
+            p(class='mb-3 text-sm font-medium text-calm') 결제 다음 단계
             h1(class='m-0 max-w-2xl text-4xl font-black leading-tight tracking-[-0.04em] text-ink sm:text-5xl')
               | 매출 데이터를 연결하면
               br
@@ -38,18 +38,18 @@ block content
               | 여신금융협회와 배달앱 계정을 연결해 카드매출, 주문, 정산 데이터를 한곳에서 확인하세요.
               | 입력한 비밀번호는 이 프로토타입에서 저장하지 않습니다.
           div(class='rounded-[28px] bg-[#f2f6ff] p-5 text-right')
-            p(class='text-sm font-bold text-calm') 연동 진행률
+            p(class='text-sm font-medium text-calm') 연동 진행률
             p(class='mt-1 text-4xl font-black tracking-[-0.04em] text-ink') #{completedCount}/#{totalCount}
             div(class='mt-4 h-2 w-44 overflow-hidden rounded-full bg-white')
               div(class='h-full rounded-full bg-toss', style=`width: ${(completedCount / totalCount) * 100}%`)
 
       if errors && errors.length
-        div(class='mb-5 rounded-3xl bg-red-50 p-5 text-sm font-bold text-red-600')
+        div(class='mb-5 rounded-3xl bg-red-50 p-5 text-sm font-medium text-red-600')
           each error in errors
             p= error
 
       if connectedProvider
-        div(class='mb-5 flex items-center gap-3 rounded-3xl bg-emerald-50 p-5 text-sm font-bold text-emerald-700')
+        div(class='mb-5 flex items-center gap-3 rounded-3xl bg-emerald-50 p-5 text-sm font-medium text-emerald-700')
           span(class='flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white') ✓
           | 연동 정보가 저장됐어요. 이제 상태가 연동 완료로 표시됩니다.
 
@@ -64,7 +64,7 @@ block content
                 div
                   div(class='flex items-center gap-2')
                     h2(class='m-0 text-2xl font-black tracking-[-0.03em] text-ink')= provider.name
-                    span(class='rounded-full bg-slate-100 px-2.5 py-1 text-xs font-extrabold text-calm')= provider.category
+                    span(class='rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-calm')= provider.category
                   p(class='mt-1 text-sm font-semibold text-calm')= provider.description
               if isConnected
                 div(class='inline-flex shrink-0 items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700')
@@ -77,28 +77,28 @@ block content
 
             if isConnected
               div(class='mb-5 rounded-3xl bg-emerald-50 p-4')
-                p(class='text-sm font-extrabold text-emerald-800') 연결된 계정
+                p(class='text-sm font-medium text-emerald-800') 연결된 계정
                 p(class='mt-1 text-lg font-black text-ink')= provider.loginIdMasked
-                p(class='mt-1 text-xs font-bold text-emerald-700') 마지막 확인: #{provider.connectedAt}
+                p(class='mt-1 text-xs font-medium text-emerald-700') 마지막 확인: #{provider.connectedAt}
             else
               div(class='mb-5 rounded-3xl bg-[#f8fafc] p-4')
-                p(class='text-sm font-extrabold text-calm') 아직 계정 정보가 필요해요
+                p(class='text-sm font-medium text-calm') 아직 계정 정보가 필요해요
                 p(class='mt-1 text-sm font-medium leading-6 text-calm') 아이디와 비밀번호를 입력하면 연결 상태를 확인할 수 있습니다.
 
             form(class='grid gap-3', method='post', action=`/integrations/${provider.key}`, autocomplete='off')
-              label(class='grid gap-2 text-sm font-extrabold text-calm')
+              label(class='grid gap-2 text-sm font-medium text-calm')
                 | 아이디
                 input(
-                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-bold text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
+                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-medium text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
                   type='text',
                   name='loginId',
                   placeholder=`${provider.name} 아이디`,
                   autocomplete='username'
                 )
-              label(class='grid gap-2 text-sm font-extrabold text-calm')
+              label(class='grid gap-2 text-sm font-medium text-calm')
                 | 비밀번호
                 input(
-                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-bold text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
+                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-medium text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
                   type='password',
                   name='password',
                   placeholder='비밀번호',
