@@ -25,26 +25,36 @@ npm start
 서버 실행 후 다음 화면을 사용할 수 있습니다.
 
 ```text
+http://localhost:3000/
 http://localhost:3000/auth/signup
 http://localhost:3000/auth/login
+http://localhost:3000/auth/terms?provider=kakao
 http://localhost:3000/checkout
 http://localhost:3000/integrations
 ```
 
 기본 흐름:
 
-1. `/auth/signup`에서 회원가입
-2. `/checkout/customer`에서 고객정보 입력
-3. `/checkout/payment`에서 테스트 카드 결제
-4. 결제 완료 후 `/integrations`에서 여신금융협회와 배달앱 계정 연동
-5. `/checkout`에서 최근 결제 내역 확인
+1. `/`에서 오늘 매출, 입금 예정, 최근매출, 월 손익/예상, 리뷰, 사업 소식 확인
+2. `/auth/signup`에서 약관 동의 후 이메일 회원가입 또는 `/auth/login`에서 카카오 로그인
+3. `/checkout/customer`에서 고객정보 입력
+4. `/checkout/payment`에서 테스트 카드 결제
+5. 결제 완료 후 `/integrations`에서 여신금융협회와 배달앱 계정 연동
+6. `/checkout`에서 최근 결제 내역 확인
 
 앱 DB는 기본적으로 `data/app.sqlite`에 저장됩니다.
 
 ```env
 APP_DB_PATH=data/app.sqlite
 SESSION_SECRET=change-this-long-random-secret
+KAKAO_CLIENT_ID=
+KAKAO_CLIENT_SECRET=
+KAKAO_REDIRECT_URI=http://localhost:3000/auth/kakao/callback
 ```
+
+`KAKAO_CLIENT_ID`가 비어 있으면 로컬 개발용 카카오 데모 계정으로 로그인됩니다. 실제 카카오 로그인을
+사용하려면 카카오 Developers에서 REST API 키와 Redirect URI를 등록한 뒤 위 값을 채워야 합니다.
+카카오 로그인도 먼저 필수 약관 동의를 거친 뒤 진행됩니다.
 
 카드 결제 화면은 실제 과금이 없는 테스트 승인 화면입니다. 카드번호는 서버에 저장하지 않고, 결제 기록에는
 카드 브랜드와 끝 4자리만 저장합니다. 실제 서비스에서는 Toss Payments, PortOne, NICE Payments 같은

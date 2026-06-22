@@ -1,20 +1,75 @@
 extends layout
 
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
 block content
-  .hero
-    .hero-panel
-      h1 작은 가게 매출과 결제를 한눈에
-      p.description 여신금융협회 카드매출 수집, 고객정보 관리, 테스트 결제 화면까지 한 흐름으로 확인하는 자영업 장부 서비스입니다.
-      .hero-actions
+  .mobile-dashboard
+    .home-greeting
+      p.eyebrow 오늘의 장부
+      h1 사장님, 오늘 매출을 확인해보세요
+      p.description 카드매출, 입금 예정, 리뷰와 사업 소식을 한 화면에 모았어요.
+
+    .dashboard-card.primary-metric
+      span.card-label 오늘 매출
+      strong
+        +money(dashboard.todaySales)
+      a.card-link(href='/sales') 자세히 보기
+
+    .metric-grid
+      .dashboard-card
+        span.card-label 매출 입금 예정
+        strong
+          +money(dashboard.expectedDeposit)
+        small 3일 이내 예상
+      .dashboard-card
+        span.card-label #{dashboard.monthLabel} 손익
+        strong
+          +money(dashboard.monthProfit)
+        small 수수료 반영
+      .dashboard-card
+        span.card-label #{dashboard.monthLabel} 예상
+        strong
+          +money(dashboard.monthForecast)
+        small 현재 추세 기준
+      .dashboard-card
+        span.card-label 오늘 새로운 리뷰
+        strong #{dashboard.newReviews}개
+        small 확인이 필요해요
+
+    .section-header
+      h2 최근매출
+      a(href='/sales') 전체
+    if dashboard.recentSales.length
+      .list-card
+        each sale in dashboard.recentSales
+          .list-row
+            div
+              strong= sale.cardCompany || '카드매출'
+              span= sale.transactionDate || '날짜 없음'
+            b
+              +money(sale.approvalAmount)
+    else
+      .list-card
+        .list-row
+          div
+            strong 아직 매출 데이터가 없어요
+            span 연동 후 자동으로 채워집니다.
+          a(href='/integrations') 연동
+
+    .section-header
+      h2 꼭 알아야하는 사업 소식
+    .news-card
+      each item in dashboard.news
+        a.news-row(href='#')
+          span= item
+          b ›
+
+    .bottom-actions
+      if currentUser
+        a.button-link(href='/integrations') 매출 연동하기
+      else
         a.button-link(href='/auth/signup') 무료로 시작하기
-        a(href='/auth/login') 이미 계정이 있어요
-    .quick-list
-      a.quick-item(href='/sales')
-        strong 매출 장부
-        span 일별·월별 카드매출 합계 보기
-      a.quick-item(href='/checkout/customer')
-        strong 고객정보
-        span 상호, 대표자, 연락처 저장
-      a.quick-item(href='/checkout/payment')
-        strong 카드 결제
-        span 실제 과금 없는 테스트 결제
+        a.kakao-button(href='/auth/terms?provider=kakao')
+          span.kakao-mark K
+          span 카카오로 시작하기

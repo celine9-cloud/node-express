@@ -23,6 +23,11 @@ function openAppDatabase(dbPath = resolveAppDbPath()) {
       name TEXT NOT NULL,
       business_name TEXT,
       password_hash TEXT NOT NULL,
+      auth_provider TEXT NOT NULL DEFAULT 'email',
+      kakao_id TEXT,
+      terms_accepted_at TEXT,
+      privacy_accepted_at TEXT,
+      marketing_accepted_at TEXT,
       created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -73,7 +78,26 @@ function openAppDatabase(dbPath = resolveAppDbPath()) {
     CREATE INDEX IF NOT EXISTS idx_integration_accounts_user_id ON integration_accounts(user_id);
   `);
 
+  ensureUserColumns(db);
+
   return db;
+}
+
+function ensureColumn(db, tableName, columnName, definition) {
+  const columns = db.prepare(`PRAGMA table_info(${tableName})`).all();
+  const exists = columns.some((column) => column.name === columnName);
+
+  if (!exists) {
+    db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
+  }
+}
+
+function ensureUserColumns(db) {
+  ensureColumn(db, 'users', 'auth_provider', "TEXT NOT NULL DEFAULT 'email'");
+  ensureColumn(db, 'users', 'kakao_id', 'TEXT');
+  ensureColumn(db, 'users', 'terms_accepted_at', 'TEXT');
+  ensureColumn(db, 'users', 'privacy_accepted_at', 'TEXT');
+  ensureColumn(db, 'users', 'marketing_accepted_at', 'TEXT');
 }
 
 function sanitizeEmail(email) {
@@ -111,20 +135,39 @@ function publicUser(row) {
     email: row.email,
     name: row.name,
     businessName: row.business_name || '',
+    authProvider: row.auth_provider || 'email',
     createdAt: row.created_at,
   };
 }
 
-function createUser({ email, name, businessName, password }) {
+function createUser({ email, name, businessName, password, termsAccepted, privacyAccepted, marketingAccepted }) {
   const db = openAppDatabase();
   const passwordHash = bcrypt.hashSync(String(password || ''), 12);
+  const now = new Date().toISOString();
 
   try {
     const result = db
       .prepare(
         `
-          INSERT INTO users (email, name, business_name, password_hash)
-          VALUES (@email, @name, @businessName, @passwordHash)
+          INSERT INTO users (
+            email,
+            name,
+            business_name,
+            password_hash,
+            auth_provider,
+            terms_accepted_at,
+            privacy_accepted_at,
+            marketing_accepted_at
+          ) VALUES (
+            @email,
+            @name,
+            @businessName,
+            @passwordHash,
+            'email',
+            @termsAcceptedAt,
+            @privacyAcceptedAt,
+            @marketingAcceptedAt
+          )
         `
       )
       .run({
@@ -132,7 +175,86 @@ function createUser({ email, name, businessName, password }) {
         name: String(name || '').trim(),
         businessName: String(businessName || '').trim(),
         passwordHash,
+        termsAcceptedAt: termsAccepted ? now : null,
+        privacyAcceptedAt: privacyAccepted ? now : null,
+        marketingAcceptedAt: marketingAccepted ? now : null,
       });
+
+    return findUserById(result.lastInsertRowid);
+  } finally {
+    db.close();
+  }
+}
+
+function findOrCreateKakaoUser({ kakaoId, email, name, termsAccepted, privacyAccepted, marketingAccepted }) {
+  const db = openAppDatabase();
+  const now = new Date().toISOString();
+  const normalizedEmail = sanitizeEmail(email || `kakao-${kakaoId}@kakao.local`);
+  const displayName = String(name || '카카오 사용자').trim();
+
+  try {
+    const existingByKakao = db.prepare('SELECT * FROM users WHERE kakao_id = ?').get(String(kakaoId));
+    if (existingByKakao) {
+      return publicUser(existingByKakao);
+    }
+
+    const existingByEmail = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail);
+    if (existingByEmail) {
+      db.prepare(
+        `
+          UPDATE users
+          SET
+            auth_provider = 'kakao',
+            kakao_id = @kakaoId,
+            terms_accepted_at = COALESCE(terms_accepted_at, @termsAcceptedAt),
+            privacy_accepted_at = COALESCE(privacy_accepted_at, @privacyAcceptedAt),
+            marketing_accepted_at = COALESCE(marketing_accepted_at, @marketingAcceptedAt)
+          WHERE id = @id
+        `
+      ).run({
+        id: existingByEmail.id,
+        kakaoId: String(kakaoId),
+        termsAcceptedAt: termsAccepted ? now : null,
+        privacyAcceptedAt: privacyAccepted ? now : null,
+        marketingAcceptedAt: marketingAccepted ? now : null,
+      });
+
+      return findUserById(existingByEmail.id);
+    }
+
+    const result = db.prepare(
+      `
+        INSERT INTO users (
+          email,
+          name,
+          business_name,
+          password_hash,
+          auth_provider,
+          kakao_id,
+          terms_accepted_at,
+          privacy_accepted_at,
+          marketing_accepted_at
+        ) VALUES (
+          @email,
+          @name,
+          '',
+          @passwordHash,
+          'kakao',
+          @kakaoId,
+          @termsAcceptedAt,
+          @privacyAcceptedAt,
+          @marketingAcceptedAt
+        )
+      `
+    ).run({
+      email: normalizedEmail,
+      name: displayName,
+      passwordHash: bcrypt.hashSync(crypto.randomBytes(24).toString('hex'), 12),
+      kakaoId: String(kakaoId),
+      termsAcceptedAt: termsAccepted ? now : null,
+      privacyAcceptedAt: privacyAccepted ? now : null,
+      marketingAcceptedAt: marketingAccepted ? now : null,
+    });
 
     return findUserById(result.lastInsertRowid);
   } finally {
@@ -439,6 +561,7 @@ module.exports = {
   createPayment,
   createUser,
   findUserById,
+  findOrCreateKakaoUser,
   getCustomerProfile,
   getPaymentById,
   listPayments,
