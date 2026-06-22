@@ -1,0 +1,47 @@
+extends ../layout
+
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
+block content
+  .transfer-flow
+    .flow-top
+      a.back-link(href='/transfers/recipient') ←
+      .step-dots
+        span.done
+        span.active
+        span
+      form(method='post', action='/transfers/reset')
+        button.link-button(type='submit') 처음부터
+
+    .recipient-pill
+      span= values.recipientName
+      b #{values.bankCode} · #{values.accountNumberMasked}
+
+    .flow-title
+      p.eyebrow 입금 2단계
+      h1 얼마를 보낼까요?
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.flow-card.amount-card(method='post', action='/transfers/amount', autocomplete='off')
+      label.amount-label
+        span 입금 금액
+        input.amount-input(type='text', name='amount', value=values.amount || '', placeholder='0', inputmode='numeric', autofocus, required)
+      label
+        span 통장 표시 문구
+        input(type='text', name='transactionDescription', value=values.transactionDescription || '오직송금', maxlength='7', placeholder='최대 7자')
+      label
+        span 메모
+        textarea(name='memo', rows='3', placeholder='내부 확인용 메모')= values.memo || ''
+      .form-grid
+        label
+          span 거래처 이메일
+          input(type='email', name='recipientEmail', value=values.recipientEmail || '', placeholder='선택')
+        label
+          span 거래처 연락처
+          input(type='tel', name='recipientPhone', value=values.recipientPhone || '', placeholder='선택')
+      button.primary-button(type='submit') 확인하기

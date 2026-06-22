@@ -41,7 +41,7 @@ http://localhost:3000/transfers
 3. `/checkout/customer`에서 고객정보 입력
 4. `/checkout/payment`에서 테스트 카드 결제
 5. 결제 완료 후 `/integrations`에서 여신금융협회와 배달앱 계정 연동
-6. `/transfers`에서 거래처 계좌와 금액으로 지급대행 송금 요청
+6. `/transfers`에서 거래처 계좌와 금액을 단계별로 확인하고 지급대행 입금 요청
 7. `/checkout`에서 최근 결제 내역 확인
 
 앱 DB는 기본적으로 `data/app.sqlite`에 저장됩니다.
@@ -70,10 +70,17 @@ TOSS_PAYOUT_SECURITY_KEY=
 위치명/위도/경도는 `WEATHER_CITY_NAME`, `WEATHER_LATITUDE`, `WEATHER_LONGITUDE`로 바꿀 수 있습니다.
 날씨 API가 실패하면 화면에는 기본 안내 문구가 표시됩니다.
 
-거래처 송금 화면(`/transfers`)은 토스페이먼츠 지급대행 API 문서 구조를 참고합니다. 지급대행은 계좌번호로
+거래처 입금 화면(`/transfers`)은 토스페이먼츠 지급대행 API 문서 구조를 참고합니다. 지급대행은 계좌번호로
 바로 송금하는 단일 API가 아니라, 거래처를 셀러로 등록한 뒤 해당 셀러에게 지급대행 요청을 보내는 흐름입니다.
 Request Body가 있는 지급대행 POST 요청은 `TossPayments-api-security-mode: ENCRYPTION` 헤더와 Basic 인증을
 사용하고, 보안 키로 JWE 암호화/복호화를 해야 합니다.
+
+입금 화면은 토스식 단계형 플로우입니다.
+
+1. 받는 거래처 계좌 입력
+2. 입금 금액 입력
+3. 거래처/계좌/금액 최종 확인
+4. 요청 완료 및 최근 입금 요청 확인
 
 기본값은 안전한 데모 모드입니다. 실제 외부 송금 요청을 보내려면 다음을 모두 설정해야 합니다.
 

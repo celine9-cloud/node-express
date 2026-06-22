@@ -17,7 +17,7 @@ html
           if currentUser
             a(href='/checkout') 내 서비스
             a(href='/integrations') 연동
-            a(href='/transfers') 송금
+            a(href='/transfers') 입금
             span.nav-user #{currentUser.name}님
             form.inline-form(method='post', action='/auth/logout')
               button.link-button(type='submit') 로그아웃

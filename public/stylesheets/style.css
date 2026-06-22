@@ -602,6 +602,182 @@ p {
   margin-top: 8px;
 }
 
+.transfer-flow {
+  display: grid;
+  gap: 16px;
+}
+
+.flow-top {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+}
+
+.back-link {
+  align-items: center;
+  background: var(--surface);
+  border-radius: 50%;
+  box-shadow: 0 8px 20px rgba(25, 31, 40, 0.06);
+  color: var(--text);
+  display: inline-flex;
+  height: 36px;
+  justify-content: center;
+  width: 36px;
+}
+
+.step-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.step-dots span {
+  background: #d9dee8;
+  border-radius: 999px;
+  height: 6px;
+  width: 18px;
+}
+
+.step-dots .active,
+.step-dots .done {
+  background: var(--primary);
+}
+
+.flow-title {
+  padding: 4px 2px;
+}
+
+.flow-card,
+.confirm-card {
+  background: var(--surface);
+  border-radius: 24px;
+  box-shadow: var(--shadow);
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.flow-card label {
+  color: var(--muted);
+  display: grid;
+  font-size: 12px;
+  font-weight: 500;
+  gap: 6px;
+}
+
+.flow-card input,
+.flow-card textarea {
+  background: var(--surface-soft);
+  border: 0;
+  border-radius: 14px;
+  color: var(--text);
+  font: inherit;
+  font-size: 14px;
+  outline: 0;
+  padding: 13px 14px;
+}
+
+.amount-card {
+  box-shadow: none;
+  padding: 0;
+}
+
+.amount-label {
+  color: var(--muted);
+  display: grid;
+  gap: 8px;
+}
+
+.amount-input {
+  background: transparent !important;
+  border-radius: 0 !important;
+  box-shadow: none !important;
+  font-size: 42px !important;
+  letter-spacing: -0.05em;
+  padding: 8px 0 12px !important;
+}
+
+.recipient-pill {
+  align-items: center;
+  background: var(--surface);
+  border-radius: 999px;
+  box-shadow: 0 8px 20px rgba(25, 31, 40, 0.06);
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+  padding: 11px 14px;
+}
+
+.recipient-pill span {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.recipient-pill b {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.confirm-card {
+  gap: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+.confirm-amount {
+  padding: 20px;
+}
+
+.confirm-amount span,
+.confirm-row span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.confirm-amount strong {
+  display: block;
+  font-size: 30px;
+  letter-spacing: -0.05em;
+  margin-top: 4px;
+}
+
+.confirm-row {
+  align-items: center;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 20px;
+}
+
+.confirm-row b {
+  text-align: right;
+}
+
+.full-button {
+  width: 100%;
+}
+
+.done-hero {
+  background: var(--surface);
+  border-radius: 28px;
+  box-shadow: var(--shadow);
+  padding: 26px 20px;
+  text-align: center;
+}
+
+.done-mark {
+  align-items: center;
+  background: var(--primary);
+  border-radius: 50%;
+  color: #fff;
+  display: inline-flex;
+  font-size: 24px;
+  height: 54px;
+  justify-content: center;
+  margin-bottom: 14px;
+  width: 54px;
+}
+
 table {
   background: var(--surface);
   border-collapse: separate;

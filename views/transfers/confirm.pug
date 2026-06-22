@@ -1,0 +1,54 @@
+extends ../layout
+
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
+block content
+  .transfer-flow
+    .flow-top
+      a.back-link(href='/transfers/amount') ←
+      .step-dots
+        span.done
+        span.done
+        span.active
+      form(method='post', action='/transfers/reset')
+        button.link-button(type='submit') 처음부터
+
+    .flow-title
+      p.eyebrow 입금 3단계
+      h1 입금 요청 전에 확인해 주세요
+      p.description 지급대행 요청은 회수가 어려울 수 있어요. 거래처와 금액을 꼭 확인하세요.
+
+    if demoMode
+      .notice
+        strong 데모 모드
+        p 지금은 실제 송금이 발생하지 않고 요청 기록만 저장됩니다.
+    else
+      .alert
+        strong 실제 지급대행 모드
+        p 승인하면 토스페이먼츠 지급대행 요청이 전송됩니다.
+
+    .confirm-card
+      .confirm-amount
+        span 보낼 금액
+        strong
+          +money(values.amount)
+      .confirm-row
+        span 받는 거래처
+        b= values.recipientName
+      .confirm-row
+        span 계좌
+        b #{values.bankCode} · #{values.accountNumberMasked}
+      .confirm-row
+        span 예금주
+        b= values.holderName
+      .confirm-row
+        span 통장 표시
+        b= values.transactionDescription
+      if values.memo
+        .confirm-row
+          span 메모
+          b= values.memo
+
+    form(method='post', action='/transfers/confirm')
+      button.primary-button.full-button(type='submit') 입금 요청하기
