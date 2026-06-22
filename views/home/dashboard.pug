@@ -1,4 +1,4 @@
-extends layout
+extends ../layout
 
 mixin money(value)
   | #{Number(value || 0).toLocaleString('ko-KR')}원
@@ -110,10 +110,4 @@ block content
           b ›
 
     .bottom-actions
-      if currentUser
-        a.button-link(href='/integrations') 매출 연동하기
-      else
-        a.button-link(href='/auth/signup') 무료로 시작하기
-        a.kakao-button(href='/auth/terms?provider=kakao')
-          span.kakao-mark K
-          span 카카오로 시작하기
+      a.button-link(href='/integrations') 매출 연동하기

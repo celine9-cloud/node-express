@@ -26,18 +26,15 @@ html
             a.button-link(href='/auth/signup') 시작하기
       main.app-main
         block content
-      nav.bottom-tab
-        a(href='/')
-          span 홈
-        a(href='/sales')
-          span 장부
-        a(href='/transfers')
-          span 입금
-        a(href='/integrations')
-          span 연동
-        if currentUser
+      if currentUser
+        nav.bottom-tab
+          a(href='/')
+            span 홈
+          a(href='/sales')
+            span 장부
+          a(href='/transfers')
+            span 입금
+          a(href='/integrations')
+            span 연동
           a(href='/checkout')
             span 내정보
-        else
-          a(href='/auth/login')
-            span 로그인

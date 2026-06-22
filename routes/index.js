@@ -157,7 +157,14 @@ async function buildDashboard() {
 /* GET home page. */
 router.get('/', async function(req, res, next) {
   try {
-    res.render('index', {
+    if (!req.session.userId) {
+      res.render('home/guest', {
+        title: '오직(ogik) 로그인',
+      });
+      return;
+    }
+
+    res.render('home/dashboard', {
       title: '오직(ogik)',
       dashboard: await buildDashboard(),
     });

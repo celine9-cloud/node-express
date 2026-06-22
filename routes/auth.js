@@ -219,7 +219,7 @@ router.get('/kakao', function(req, res, next) {
         return;
       }
 
-      res.redirect(consent.next || '/checkout');
+      res.redirect(consent.next || '/');
     });
     return;
   }
@@ -263,7 +263,7 @@ router.get('/kakao/callback', async function(req, res, next) {
         return;
       }
 
-      res.redirect(consent.next || '/checkout');
+      res.redirect(consent.next || '/');
     });
   } catch (error) {
     next(error);
@@ -292,7 +292,7 @@ router.post('/login', function(req, res, next) {
       return;
     }
 
-    res.redirect(values.next || '/checkout');
+    res.redirect(values.next || '/');
   });
 });
 
