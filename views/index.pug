@@ -1,11 +1,20 @@
 extends layout
 
 block content
-  h1= title
-  p Welcome to #{title}
-  p
-    a.button-link(href='/auth/signup') 회원가입 시작하기
-  p
-    a(href='/checkout') 로그인 후 고객정보/카드결제 화면 보기
-  p
-    a(href='/sales') 매출 장부 보기
+  .hero
+    .hero-panel
+      h1 작은 가게 매출과 결제를 한눈에
+      p.description 여신금융협회 카드매출 수집, 고객정보 관리, 테스트 결제 화면까지 한 흐름으로 확인하는 자영업 장부 서비스입니다.
+      .hero-actions
+        a.button-link(href='/auth/signup') 무료로 시작하기
+        a(href='/auth/login') 이미 계정이 있어요
+    .quick-list
+      a.quick-item(href='/sales')
+        strong 매출 장부
+        span 일별·월별 카드매출 합계 보기
+      a.quick-item(href='/checkout/customer')
+        strong 고객정보
+        span 상호, 대표자, 연락처 저장
+      a.quick-item(href='/checkout/payment')
+        strong 카드 결제
+        span 실제 과금 없는 테스트 결제

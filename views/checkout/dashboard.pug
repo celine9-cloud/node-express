@@ -17,12 +17,12 @@ block content
         else
           strong 미입력
           p.muted 결제 전에 고객정보를 입력해 주세요.
-        a(href='/checkout/customer') 고객정보 입력/수정
+        a.button-link(href='/checkout/customer') 고객정보 입력/수정
       .summary-card
         span.label 테스트 결제
         strong 카드 결제
         p.muted 실제 과금 없이 결제 승인 화면 흐름만 확인합니다.
-        a(href='/checkout/payment') 카드 결제하기
+        a.button-link(href='/checkout/payment') 카드 결제하기
 
     h2 최근 결제 기록
     if payments.length

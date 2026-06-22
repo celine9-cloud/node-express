@@ -4,112 +4,113 @@ mixin money(value)
   | #{Number(value || 0).toLocaleString('ko-KR')}원
 
 block content
-  h1= title
-  p.description 여신금융협회에서 수집한 카드매출 데이터를 로컬 SQLite DB 기준으로 보여줍니다.
+  .page-shell
+    h1= title
+    p.description 여신금융협회에서 수집한 카드매출 데이터를 로컬 SQLite DB 기준으로 보여줍니다.
 
-  form.filters(method='get', action='/sales')
-    label
-      | 시작일
-      input(type='date', name='from', value=filters.from)
-    label
-      | 종료일
-      input(type='date', name='to', value=filters.to)
-    button(type='submit') 조회
-    a.reset-link(href='/sales') 초기화
+    form.filters(method='get', action='/sales')
+      label
+        | 시작일
+        input(type='date', name='from', value=filters.from)
+      label
+        | 종료일
+        input(type='date', name='to', value=filters.to)
+      button(type='submit') 조회
+      a.reset-link(href='/sales') 초기화
 
-  .summary-grid
-    .summary-card
-      span.label 건수
-      strong #{Number(summary.rowCount || 0).toLocaleString('ko-KR')}건
-    .summary-card
-      span.label 승인금액
-      strong
-        +money(summary.approvalAmount)
-    .summary-card
-      span.label 수수료
-      strong
-        +money(summary.feeAmount)
-    .summary-card
-      span.label 실입금액
-      strong
-        +money(summary.depositAmount)
+    .summary-grid
+      .summary-card
+        span.label 건수
+        strong #{Number(summary.rowCount || 0).toLocaleString('ko-KR')}건
+      .summary-card
+        span.label 승인금액
+        strong
+          +money(summary.approvalAmount)
+      .summary-card
+        span.label 수수료
+        strong
+          +money(summary.feeAmount)
+      .summary-card
+        span.label 실입금액
+        strong
+          +money(summary.depositAmount)
 
-  p.muted DB 파일: #{dbPath}
-  p
-    a(href='/sales/api') JSON API 보기
+    p.muted DB 파일: #{dbPath}
+    p
+      a(href='/sales/api') JSON API 보기
 
-  h2 월별 합계
-  if monthly.length
-    table
-      thead
-        tr
-          th 월
-          th 건수
-          th 승인금액
-          th 수수료
-          th 실입금액
-      tbody
-        each item in monthly
+    h2 월별 합계
+    if monthly.length
+      table
+        thead
           tr
-            td= item.period || '날짜 없음'
-            td #{Number(item.rowCount || 0).toLocaleString('ko-KR')}건
-            td
-              +money(item.approvalAmount)
-            td
-              +money(item.feeAmount)
-            td
-              +money(item.depositAmount)
-  else
-    p.empty 아직 저장된 매출 데이터가 없습니다.
+            th 월
+            th 건수
+            th 승인금액
+            th 수수료
+            th 실입금액
+        tbody
+          each item in monthly
+            tr
+              td= item.period || '날짜 없음'
+              td #{Number(item.rowCount || 0).toLocaleString('ko-KR')}건
+              td
+                +money(item.approvalAmount)
+              td
+                +money(item.feeAmount)
+              td
+                +money(item.depositAmount)
+    else
+      p.empty 아직 저장된 매출 데이터가 없습니다.
 
-  h2 일별 합계
-  if daily.length
-    table
-      thead
-        tr
-          th 일자
-          th 건수
-          th 승인금액
-          th 수수료
-          th 실입금액
-      tbody
-        each item in daily
+    h2 일별 합계
+    if daily.length
+      table
+        thead
           tr
-            td= item.period || '날짜 없음'
-            td #{Number(item.rowCount || 0).toLocaleString('ko-KR')}건
-            td
-              +money(item.approvalAmount)
-            td
-              +money(item.feeAmount)
-            td
-              +money(item.depositAmount)
-  else
-    p.empty 아직 일별 합계를 만들 데이터가 없습니다.
+            th 일자
+            th 건수
+            th 승인금액
+            th 수수료
+            th 실입금액
+        tbody
+          each item in daily
+            tr
+              td= item.period || '날짜 없음'
+              td #{Number(item.rowCount || 0).toLocaleString('ko-KR')}건
+              td
+                +money(item.approvalAmount)
+              td
+                +money(item.feeAmount)
+              td
+                +money(item.depositAmount)
+    else
+      p.empty 아직 일별 합계를 만들 데이터가 없습니다.
 
-  h2 최근 매출
-  if rows.length
-    table
-      thead
-        tr
-          th 거래일
-          th 입금일
-          th 카드사
-          th 승인번호
-          th 승인금액
-          th 수수료
-          th 실입금액
-      tbody
-        each row in rows
+    h2 최근 매출
+    if rows.length
+      table
+        thead
           tr
-            td= row.transactionDate || '-'
-            td= row.settlementDate || '-'
-            td= row.cardCompany || '-'
-            td= row.approvalNumber || '-'
-            td
-              +money(row.approvalAmount)
-            td
-              +money(row.feeAmount)
-            td
-              +money(row.depositAmount)
-  else
-    p.empty `npm run scrape:creditfinance` 또는 `npm run import:sales -- <json-file>`로 데이터를 먼저 넣어주세요.
+            th 거래일
+            th 입금일
+            th 카드사
+            th 승인번호
+            th 승인금액
+            th 수수료
+            th 실입금액
+        tbody
+          each row in rows
+            tr
+              td= row.transactionDate || '-'
+              td= row.settlementDate || '-'
+              td= row.cardCompany || '-'
+              td= row.approvalNumber || '-'
+              td
+                +money(row.approvalAmount)
+              td
+                +money(row.feeAmount)
+              td
+                +money(row.depositAmount)
+    else
+      p.empty `npm run scrape:creditfinance` 또는 `npm run import:sales -- <json-file>`로 데이터를 먼저 넣어주세요.
