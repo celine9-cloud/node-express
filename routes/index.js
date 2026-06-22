@@ -12,6 +12,11 @@ function addDays(date, days) {
   return next;
 }
 
+function formatKoreanDate(date) {
+  var weekdays = ['일', '월', '화', '수', '목', '금', '토'];
+  return `${date.getMonth() + 1}월 ${date.getDate()}일 ${weekdays[date.getDay()]}요일`;
+}
+
 function weatherInfoFromCode(code) {
   var map = {
     0: ['맑음', '☀️'],
@@ -111,6 +116,8 @@ async function buildDashboard() {
   var monthProfit = monthRevenue - monthFee;
 
   return {
+    dateLabel: formatKoreanDate(now),
+    storeName: process.env.DASHBOARD_STORE_NAME || '오직상점',
     todaySales: Number(todaySummary.approvalAmount || 0),
     expectedDeposit: Number(expectedDeposit.depositAmount || 0),
     weather: await fetchWeather(),
@@ -119,6 +126,26 @@ async function buildDashboard() {
     monthProfit: monthProfit,
     monthForecast: Math.round(monthRevenue * 1.12),
     newReviews: 3,
+    todoCards: [
+      {
+        title: '매출 연동',
+        description: '카드·배달앱 데이터를 연결해요',
+        href: '/integrations',
+        badge: '필요',
+      },
+      {
+        title: '입금 요청',
+        description: '거래처 계좌로 지급 요청',
+        href: '/transfers',
+        badge: '데모',
+      },
+      {
+        title: '리뷰 확인',
+        description: '새 리뷰 3개가 도착했어요',
+        href: '#reviews',
+        badge: '3',
+      },
+    ],
     news: [
       '부가세 신고 전 카드매출 누락 여부를 확인하세요.',
       '배달앱 정산 주기가 달라 입금 예정일을 함께 봐야 해요.',

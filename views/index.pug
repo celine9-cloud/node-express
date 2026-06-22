@@ -4,32 +4,31 @@ mixin money(value)
   | #{Number(value || 0).toLocaleString('ko-KR')}원
 
 block content
-  .mobile-dashboard
-    .home-greeting
-      p.eyebrow 오늘의 장부
-      h1 사장님, 오늘 매출을 확인해보세요
-      p.description 카드매출, 입금 예정, 리뷰와 사업 소식을 한 화면에 모았어요.
+  .mobile-dashboard.cashnote-home
+    .home-appbar
+      div
+        p.eyebrow= dashboard.dateLabel
+        h1 #{dashboard.storeName} 사장님
+      a.bell-button(href='#news', aria-label='사업 소식') 알림
 
-    .dashboard-card.primary-metric
-      span.card-label 오늘 매출
-      strong
-        +money(dashboard.todaySales)
-      a.card-link(href='/sales') 자세히 보기
+    .today-card
+      .today-card-head
+        div
+          span.card-label 오늘 매출
+          strong
+            +money(dashboard.todaySales)
+        a.card-link(href='/sales') 상세
+      .today-card-foot
+        span 카드매출 기준
+        span #{dashboard.weather.city} #{dashboard.weather.available ? dashboard.weather.temperature + '°C' : '날씨 확인 중'}
 
-    .dashboard-card.weather-card
-      .weather-copy
-        span.card-label #{dashboard.weather.city} 날씨
-        strong
-          if dashboard.weather.available
-            | #{dashboard.weather.temperature}°C
-          else
-            | 확인 중
-        small
-          if dashboard.weather.available
-            | #{dashboard.weather.condition} · 습도 #{dashboard.weather.humidity}% · 바람 #{dashboard.weather.windSpeed}km/h
-          else
-            | #{dashboard.weather.condition}
-      .weather-icon= dashboard.weather.icon
+    .quick-action-strip
+      each item in dashboard.todoCards
+        a.quick-action-card(href=item.href)
+          .quick-action-top
+            strong= item.title
+            span= item.badge
+          small= item.description
 
     .metric-grid
       .dashboard-card
@@ -52,6 +51,21 @@ block content
         strong #{dashboard.newReviews}개
         small 확인이 필요해요
 
+    .dashboard-card.weather-card
+      .weather-copy
+        span.card-label 오늘 날씨
+        strong
+          if dashboard.weather.available
+            | #{dashboard.weather.city} #{dashboard.weather.temperature}°C
+          else
+            | #{dashboard.weather.city} 확인 중
+        small
+          if dashboard.weather.available
+            | #{dashboard.weather.condition} · 습도 #{dashboard.weather.humidity}% · 바람 #{dashboard.weather.windSpeed}km/h
+          else
+            | #{dashboard.weather.condition}
+      .weather-icon= dashboard.weather.icon
+
     .section-header
       h2 최근매출
       a(href='/sales') 전체
@@ -72,7 +86,22 @@ block content
             span 연동 후 자동으로 채워집니다.
           a(href='/integrations') 연동
 
-    .section-header
+    .section-header#reviews
+      h2 오늘 새로운 리뷰
+      a(href='#') 전체
+    .list-card
+      .list-row
+        div
+          strong 음식이 빨리 나와서 좋았어요
+          span 배달의민족 · 방금 전
+        b 5.0
+      .list-row
+        div
+          strong 포장이 깔끔했어요
+          span 쿠팡이츠 · 12분 전
+        b 5.0
+
+    .section-header#news
       h2 꼭 알아야하는 사업 소식
     .news-card
       each item in dashboard.news
