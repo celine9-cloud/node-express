@@ -1,0 +1,43 @@
+extends ../layout
+
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
+block content
+  .transfer-flow
+    .done-hero
+      .done-mark ✓
+      p.eyebrow 입금 요청 완료
+      h1
+        +money(transfer.amount)
+        | 을 요청했어요
+      p.description #{transfer.recipientName} · #{transfer.accountNumberMasked}
+
+    .confirm-card
+      .confirm-row
+        span 상태
+        b= transfer.status
+      .confirm-row
+        span 처리 방식
+        b= transfer.mode === 'demo' ? '데모 기록' : '토스페이먼츠 전송'
+      .confirm-row
+        span 지급대행 ID
+        b= transfer.refPayoutId
+      .confirm-row
+        span 요청일시
+        b= transfer.createdAt
+
+    .bottom-actions
+      a.button-link(href='/transfers/recipient') 다른 거래처에 입금
+      a(href='/checkout') 내 서비스로 돌아가기
+
+    h2 최근 입금 요청
+    if transfers.length
+      .list-card
+        each item in transfers
+          .list-row
+            div
+              strong= item.recipientName
+              span #{item.status} · #{item.mode} · #{item.accountNumberMasked}
+            b
+              +money(item.amount)

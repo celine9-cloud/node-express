@@ -1,0 +1,41 @@
+extends ../layout
+
+block content
+  .page-shell.narrow
+    h1 회원가입
+    p.description 사업자 장부를 시작하기 위한 기본 정보를 입력해 주세요.
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.card-form(method='post', action='/auth/signup')
+      label
+        | 이메일
+        input(type='email', name='email', value=values.email || '', required, autocomplete='email')
+      label
+        | 이름
+        input(type='text', name='name', value=values.name || '', required, autocomplete='name')
+      label
+        | 상호명
+        input(type='text', name='businessName', value=values.businessName || '', autocomplete='organization')
+      label
+        | 비밀번호
+        input(type='password', name='password', required, minlength='8', autocomplete='new-password')
+      .terms-box
+        label.check-row
+          input(type='checkbox', name='termsAccepted', checked=values.termsAccepted)
+          span [필수] 서비스 이용약관에 동의합니다.
+        label.check-row
+          input(type='checkbox', name='privacyAccepted', checked=values.privacyAccepted)
+          span [필수] 개인정보 수집 및 이용에 동의합니다.
+        label.check-row
+          input(type='checkbox', name='marketingAccepted', checked=values.marketingAccepted)
+          span [선택] 사업 소식과 혜택 알림을 받습니다.
+      button.primary-button(type='submit') 동의하고 시작하기
+
+    p.muted
+      | 이미 계정이 있나요?
+      |
+      a(href='/auth/login') 로그인

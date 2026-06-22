@@ -2,6 +2,39 @@ doctype html
 html
   head
     title= title
+    meta(name='viewport', content='width=device-width, initial-scale=1')
     link(rel='stylesheet', href='/stylesheets/style.css')
+    block extraHead
   body
-    block content
+    .app-frame
+      header.site-header
+        a.brand(href='/')
+          span.brand-mark 오
+          span 오직
+          small.brand-sub ogik
+        nav.site-nav
+          a(href='/sales') 장부
+          if currentUser
+            a(href='/checkout') 내 서비스
+            a(href='/integrations') 연동
+            a(href='/transfers') 입금
+            span.nav-user #{currentUser.name}님
+            form.inline-form(method='post', action='/auth/logout')
+              button.link-button(type='submit') 로그아웃
+          else
+            a(href='/auth/login') 로그인
+            a.button-link(href='/auth/signup') 시작하기
+      main.app-main
+        block content
+      if currentUser
+        nav.bottom-tab
+          a(href='/')
+            span 홈
+          a(href='/sales')
+            span 장부
+          a(href='/transfers')
+            span 입금
+          a(href='/integrations')
+            span 연동
+          a(href='/checkout')
+            span 내정보

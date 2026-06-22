@@ -24,6 +24,16 @@ jspm_packages
 # Optional REPL history
 .node_repl_history
 
+# Local scraper configuration and private runtime data
+.env
+.auth/
+data/
+downloads/
+*.sqlite
+*.sqlite3
+*.db
+playwright-report/
+test-results/
 
 ### Emacs ###
 *~

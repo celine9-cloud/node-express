@@ -1,0 +1,49 @@
+extends ../layout
+
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
+block content
+  .transfer-flow
+    .flow-top
+      a.back-link(href='/checkout') ←
+      .step-dots
+        span.active
+        span
+        span
+      form(method='post', action='/transfers/reset')
+        button.link-button(type='submit') 처음부터
+
+    .flow-title
+      p.eyebrow 입금 1단계
+      h1 계좌번호를 입력해 주세요
+      p.description 입력한 계좌번호로 은행을 먼저 찾아볼게요. 최종 기록에는 마스킹된 계좌번호만 저장합니다.
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.flow-card(method='post', action='/transfers/recipient', autocomplete='off')
+      label
+        span 계좌번호
+        input.account-only-input(type='text', name='accountNumber', value=values.accountNumber, placeholder='계좌번호 입력', inputmode='numeric', autofocus, required)
+      button.primary-button(type='submit') 은행 찾기
+
+    .section-header
+      h2 최근 입금 요청
+    if transfers.length
+      .list-card
+        each transfer in transfers
+          .list-row
+            div
+              strong= transfer.recipientName
+              span #{transfer.status} · #{transfer.accountNumberMasked}
+            b
+              +money(transfer.amount)
+    else
+      .list-card
+        .list-row
+          div
+            strong 아직 입금 요청이 없어요
+            span 자주 보내는 거래처가 여기에 표시돼요.

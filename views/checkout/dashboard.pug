@@ -1,0 +1,58 @@
+extends ../layout
+
+mixin money(value)
+  | #{Number(value || 0).toLocaleString('ko-KR')}원
+
+block content
+  .page-shell
+    h1 내 서비스
+    p.description 고객정보를 입력하고 테스트 카드 결제를 진행할 수 있는 사용자 화면입니다.
+
+    .summary-grid
+      .summary-card
+        span.label 고객정보
+        if customer
+          strong= customer.companyName
+          p.muted 대표자: #{customer.ownerName}
+        else
+          strong 미입력
+          p.muted 결제 전에 고객정보를 입력해 주세요.
+        a.button-link(href='/checkout/customer') 고객정보 입력/수정
+      .summary-card
+        span.label 테스트 결제
+        strong 카드 결제
+        p.muted 실제 과금 없이 결제 승인 화면 흐름만 확인합니다.
+        a.button-link(href='/checkout/payment') 카드 결제하기
+      .summary-card
+        span.label 데이터 연동
+        strong 서비스 연결
+        p.muted 여신금융협회와 배달앱 계정을 연결합니다.
+        a.button-link(href='/integrations') 연동 관리하기
+      .summary-card
+        span.label 지급대행
+        strong 거래처 입금
+        p.muted 거래처 계좌와 금액으로 입금 요청을 기록합니다.
+        a.button-link(href='/transfers') 입금 요청하기
+
+    h2 최근 결제 기록
+    if payments.length
+      table
+        thead
+          tr
+            th 주문번호
+            th 금액
+            th 카드
+            th 상태
+            th 승인일시
+        tbody
+          each payment in payments
+            tr
+              td
+                a(href=`/checkout/payment/${payment.id}`)= payment.orderId
+              td
+                +money(payment.amount)
+              td #{payment.cardBrand} **** #{payment.cardLast4}
+              td= payment.status
+              td= payment.paidAt
+    else
+      p.empty 아직 결제 기록이 없습니다.

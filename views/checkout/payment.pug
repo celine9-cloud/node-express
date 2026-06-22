@@ -1,0 +1,42 @@
+extends ../layout
+
+block content
+  .page-shell.narrow
+    h1 카드 결제
+    p.description 실제 과금 없는 테스트 결제 화면입니다. 운영 전에는 PG사의 결제창/토큰 SDK로 교체하세요.
+
+    .notice
+      strong 보안 안내
+      p 카드번호는 서버에 저장하지 않고 검증 후 끝 4자리만 결제 기록에 남깁니다.
+      p 테스트 카드 예시: 4242 4242 4242 4242 / 미래 유효기간 / CVC 임의 3자리
+
+    if errors && errors.length
+      ul.alert
+        each error in errors
+          li= error
+
+    form.card-form(method='post', action='/checkout/payment', autocomplete='off')
+      label
+        | 결제금액
+        input(type='text', name='amount', value=values.amount || '', required, inputmode='numeric')
+      label
+        | 카드 소유자명
+        input(type='text', name='cardHolder', value=values.cardHolder || '', required)
+      label
+        | 카드번호
+        input(type='text', name='cardNumber', placeholder='4242 4242 4242 4242', required, inputmode='numeric')
+      .form-grid
+        label
+          | 유효기간
+          input(type='text', name='expiry', value=values.expiry || '', placeholder='MM/YY', required)
+        label
+          | CVC
+          input(type='password', name='cvc', placeholder='123', required, maxlength='4', inputmode='numeric')
+      label
+        | 할부
+        select(name='installments')
+          option(value='0', selected=values.installments === '0') 일시불
+          option(value='2', selected=values.installments === '2') 2개월
+          option(value='3', selected=values.installments === '3') 3개월
+          option(value='6', selected=values.installments === '6') 6개월
+      button.primary-button(type='submit') 테스트 결제 승인

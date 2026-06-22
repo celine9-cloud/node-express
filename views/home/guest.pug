@@ -1,0 +1,40 @@
+extends ../layout
+
+block content
+  .guest-login-screen
+    .guest-hero
+      .guest-logo
+        span 오
+      p.eyebrow 오직 ogik
+      h1 사장님 장부를 가장 쉽게 시작하세요
+      p.description 매출, 입금 예정, 리뷰, 사업 소식까지 로그인 후 한 화면에서 확인할 수 있어요.
+
+    .guest-preview-card
+      .preview-row
+        span 매출 요약
+        b 0원
+      .preview-row
+        span 입금 예정
+        b 연동 필요
+      .preview-row
+        span 새로운 리뷰
+        b 0개
+
+    .guest-login-card
+      p.login-title 로그인하고 내 가게 장부 보기
+      a.kakao-button(href='/auth/terms?provider=kakao')
+        span.kakao-mark K
+        span 카카오로 계속하기
+      a.primary-button(href='/auth/signup') 이메일로 시작하기
+      a.login-link(href='/auth/login') 이미 계정이 있어요
+
+    .guest-benefits
+      .benefit-item
+        strong 카드·배달앱 매출 자동 정리
+        span 여신금융협회와 배달앱 연동으로 장부를 채워요.
+      .benefit-item
+        strong 입금 예정과 거래처 입금 요청
+        span 받을 돈과 보낼 돈을 한 흐름으로 확인해요.
+      .benefit-item
+        strong 사업 소식과 리뷰 알림
+        span 사장님이 놓치기 쉬운 정보를 모아 보여줘요.

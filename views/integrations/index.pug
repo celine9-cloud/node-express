@@ -1,0 +1,117 @@
+extends ../layout
+
+block extraHead
+  script(src='https://cdn.tailwindcss.com')
+  script.
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            ink: '#191F28',
+            calm: '#6B7684',
+            line: '#EEF1F5',
+            toss: '#3182F6'
+          },
+          boxShadow: {
+            soft: '0 20px 55px rgba(25, 31, 40, 0.08)'
+          }
+        }
+      }
+    }
+
+block content
+  div(class='min-h-screen rounded-[32px] bg-[#f6f8fb] px-4 py-6 text-ink sm:px-6 lg:px-8')
+    div(class='mx-auto max-w-6xl')
+      div(class='mb-8 overflow-hidden rounded-[32px] bg-white p-6 shadow-soft sm:p-8')
+        div(class='flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between')
+          div
+            if justPaid
+              div(class='mb-4 inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1 text-sm font-medium text-toss')
+                span(class='h-2 w-2 rounded-full bg-toss')
+                | 결제가 완료됐어요
+            p(class='mb-3 text-sm font-medium text-calm') 결제 다음 단계
+            h1(class='m-0 max-w-2xl text-4xl font-black leading-tight tracking-[-0.04em] text-ink sm:text-5xl')
+              | 매출 데이터를 연결하면
+              br
+              | 장부가 자동으로 채워져요
+            p(class='mt-4 max-w-2xl text-lg font-medium leading-8 text-calm')
+              | 여신금융협회와 배달앱 계정을 연결해 카드매출, 주문, 정산 데이터를 한곳에서 확인하세요.
+              | 입력한 비밀번호는 이 프로토타입에서 저장하지 않습니다.
+          div(class='rounded-[28px] bg-[#f2f6ff] p-5 text-right')
+            p(class='text-sm font-medium text-calm') 연동 진행률
+            p(class='mt-1 text-4xl font-black tracking-[-0.04em] text-ink') #{completedCount}/#{totalCount}
+            div(class='mt-4 h-2 w-44 overflow-hidden rounded-full bg-white')
+              div(class='h-full rounded-full bg-toss', style=`width: ${(completedCount / totalCount) * 100}%`)
+
+      if errors && errors.length
+        div(class='mb-5 rounded-3xl bg-red-50 p-5 text-sm font-medium text-red-600')
+          each error in errors
+            p= error
+
+      if connectedProvider
+        div(class='mb-5 flex items-center gap-3 rounded-3xl bg-emerald-50 p-5 text-sm font-medium text-emerald-700')
+          span(class='flex h-8 w-8 items-center justify-center rounded-full bg-emerald-500 text-white') ✓
+          | 연동 정보가 저장됐어요. 이제 상태가 연동 완료로 표시됩니다.
+
+      div(class='grid gap-4 lg:grid-cols-2')
+        each provider in providers
+          - var isConnected = provider.connected
+          div(class='group rounded-[32px] border border-line bg-white p-5 shadow-soft transition duration-200 hover:-translate-y-1 hover:shadow-[0_24px_70px_rgba(25,31,40,0.12)] sm:p-6')
+            div(class='mb-6 flex items-start justify-between gap-4')
+              div(class='flex items-center gap-4')
+                div(class=`flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br ${provider.accent} text-xl font-black text-white shadow-lg`)
+                  | #{provider.shortName}
+                div
+                  div(class='flex items-center gap-2')
+                    h2(class='m-0 text-2xl font-black tracking-[-0.03em] text-ink')= provider.name
+                    span(class='rounded-full bg-slate-100 px-2.5 py-1 text-xs font-medium text-calm')= provider.category
+                  p(class='mt-1 text-sm font-semibold text-calm')= provider.description
+              if isConnected
+                div(class='inline-flex shrink-0 items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700')
+                  span(class='h-2.5 w-2.5 rounded-full bg-emerald-500')
+                  | 연동 완료
+              else
+                div(class='inline-flex shrink-0 items-center gap-2 rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-500')
+                  span(class='h-2.5 w-2.5 rounded-full bg-slate-300')
+                  | 연동 필요
+
+            if isConnected
+              div(class='mb-5 rounded-3xl bg-emerald-50 p-4')
+                p(class='text-sm font-medium text-emerald-800') 연결된 계정
+                p(class='mt-1 text-lg font-black text-ink')= provider.loginIdMasked
+                p(class='mt-1 text-xs font-medium text-emerald-700') 마지막 확인: #{provider.connectedAt}
+            else
+              div(class='mb-5 rounded-3xl bg-[#f8fafc] p-4')
+                p(class='text-sm font-medium text-calm') 아직 계정 정보가 필요해요
+                p(class='mt-1 text-sm font-medium leading-6 text-calm') 아이디와 비밀번호를 입력하면 연결 상태를 확인할 수 있습니다.
+
+            form(class='grid gap-3', method='post', action=`/integrations/${provider.key}`, autocomplete='off')
+              label(class='grid gap-2 text-sm font-medium text-calm')
+                | 아이디
+                input(
+                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-medium text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
+                  type='text',
+                  name='loginId',
+                  placeholder=`${provider.name} 아이디`,
+                  autocomplete='username'
+                )
+              label(class='grid gap-2 text-sm font-medium text-calm')
+                | 비밀번호
+                input(
+                  class='w-full rounded-2xl border-0 bg-[#f6f8fb] px-4 py-4 text-base font-medium text-ink outline-none ring-0 transition placeholder:text-slate-400 focus:bg-white focus:shadow-[0_0_0_4px_rgba(49,130,246,0.16)]',
+                  type='password',
+                  name='password',
+                  placeholder='비밀번호',
+                  autocomplete='current-password'
+                )
+              button(class='mt-2 inline-flex items-center justify-center rounded-2xl bg-toss px-5 py-4 text-base font-black text-white transition hover:bg-blue-700', type='submit')
+                if isConnected
+                  | 계정 다시 연결하기
+                else
+                  | 연동하기
+
+      div(class='mt-8 rounded-[28px] bg-white p-5 text-sm font-semibold leading-7 text-calm shadow-soft')
+        p
+          strong(class='text-ink') 보안 메모:
+          |  실제 서비스에서는 아이디/비밀번호 직접 저장 대신 공식 API, OAuth, PG/스크래핑 전용 보안 저장소, KMS 암호화를 우선 검토하세요.
+        p(class='mt-2') 이 프로토타입은 입력 완료 상태와 마스킹된 아이디만 저장합니다.
