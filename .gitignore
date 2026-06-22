@@ -29,6 +29,9 @@ jspm_packages
 .auth/
 data/
 downloads/
+*.sqlite
+*.sqlite3
+*.db
 playwright-report/
 test-results/
 

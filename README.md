@@ -75,6 +75,7 @@ npm run scrape:creditfinance
 
 - `.auth/cardsales-state.json`: 다음 실행에 재사용할 로그인 세션
 - `data/card-sales/creditfinance-sales-*.json`: 수집된 결과
+- `data/ledger.sqlite`: 장부 화면에서 사용하는 SQLite DB
 
 ### 3. 기간과 출력 형식 지정
 
@@ -86,7 +87,46 @@ npm run scrape:creditfinance -- --from=2026-06-01 --to=2026-06-30 --format=csv
 
 지원 형식은 `json`, `csv`입니다.
 
-### 4. 세션 저장 후 headless 실행
+DB 저장을 잠시 끄고 파일만 만들고 싶으면 `--no-db`를 붙입니다.
+
+```bash
+npm run scrape:creditfinance -- --no-db
+```
+
+### 4. 기존 JSON 결과를 DB로 가져오기
+
+이미 저장된 JSON 파일이 있다면 import 명령으로 SQLite DB에 넣을 수 있습니다.
+
+```bash
+npm run import:sales -- data/card-sales/creditfinance-sales-2026-06-22.json
+```
+
+DB 경로는 기본적으로 `data/ledger.sqlite`입니다. 바꾸고 싶으면 `.env`에 설정합니다.
+
+```env
+SALES_DB_PATH=data/ledger.sqlite
+```
+
+### 5. 장부 화면 확인
+
+서버를 실행합니다.
+
+```bash
+npm start
+```
+
+브라우저에서 다음 주소를 엽니다.
+
+```text
+http://localhost:3000/sales
+```
+
+제공되는 화면/엔드포인트:
+
+- `/sales`: 일별/월별 합계와 최근 매출 테이블
+- `/sales/api`: 같은 데이터를 JSON으로 반환
+
+### 6. 세션 저장 후 headless 실행
 
 한 번 수동 로그인으로 `.auth/cardsales-state.json`이 만들어진 뒤에는 headless 실행을 시도할 수 있습니다.
 다만 사이트가 세션을 자주 만료하거나 추가 인증을 요구하면 다시 headed 모드로 실행해야 합니다.
@@ -95,7 +135,7 @@ npm run scrape:creditfinance -- --from=2026-06-01 --to=2026-06-30 --format=csv
 npm run scrape:creditfinance -- --headless
 ```
 
-### 5. 선택자 찾는 방법
+### 7. 선택자 찾는 방법
 
 1. 열린 Chromium에서 원하는 입력칸, 조회 버튼, 결과 테이블을 우클릭합니다.
 2. "검사"를 눌러 개발자도구를 엽니다.
@@ -112,7 +152,7 @@ CFIA_DOWNLOAD_SELECTOR=button:has-text("엑셀")
 
 사이트 화면 구조는 바뀔 수 있으므로 위 선택자는 예시입니다. 현재 화면에 맞게 확인한 값으로 바꿔야 합니다.
 
-### 6. 운영 시 보안 체크리스트
+### 8. 운영 시 보안 체크리스트
 
 - `.env`, `.auth/`, `data/`를 깃에 올리지 않습니다.
 - 실제 서비스에서는 수집 결과를 암호화된 저장소에 저장하고 접근 권한을 제한합니다.

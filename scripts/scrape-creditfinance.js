@@ -7,6 +7,7 @@ const path = require('path');
 const readline = require('readline/promises');
 const { stdin: input, stdout: output } = require('process');
 const { chromium } = require('playwright');
+const { insertSalesRows } = require('../db/salesRepository');
 
 const DEFAULT_BASE_URL = 'https://www.cardsales.or.kr/main';
 
@@ -53,6 +54,7 @@ Options:
   --format=json|csv       Output format. Default: json.
   --headless              Run browser without UI. Use only after a valid session state is saved.
   --keep-open             Keep the browser open after scraping for debugging.
+  --no-db                 Save only the output file and skip SQLite insert.
   --help                  Show this help.
 
 Environment:
@@ -228,6 +230,7 @@ async function main() {
   const format = readArg('format', env('CFIA_OUTPUT_FORMAT', 'json')).toLowerCase();
   const headless = hasFlag('headless') || parseBool(env('CFIA_HEADLESS'), false);
   const keepOpen = hasFlag('keep-open') || parseBool(env('CFIA_KEEP_OPEN'), false);
+  const saveToDb = !hasFlag('no-db') && parseBool(env('CFIA_SAVE_TO_DB'), true);
 
   if (!['json', 'csv'].includes(format)) {
     throw new Error(`Unsupported format: ${format}. Use json or csv.`);
@@ -288,11 +291,12 @@ async function main() {
     );
 
     const outputPath = getOutputPath(outputDir, format);
+    const collectedAt = new Date().toISOString();
     const payload =
       format === 'json'
         ? JSON.stringify(
             {
-              collectedAt: new Date().toISOString(),
+              collectedAt,
               sourceUrl: page.url(),
               rowCount: rows.length,
               rows,
@@ -308,6 +312,18 @@ async function main() {
     console.log(`[done] Extracted ${rows.length} rows`);
     console.log(`[done] Output saved: ${outputPath}`);
     console.log(`[done] Session state saved: ${storageStatePath}`);
+
+    if (saveToDb) {
+      const importResult = insertSalesRows(rows, {
+        source: 'creditfinance',
+        sourceUrl: page.url(),
+        collectedAt,
+      });
+      console.log(
+        `[done] SQLite saved: ${importResult.inserted}/${importResult.total} rows (${importResult.ignored} duplicates ignored)`
+      );
+      console.log(`[done] Database: ${importResult.dbPath}`);
+    }
 
     if (keepOpen && !headless) {
       await prompt('Browser is still open for inspection.');

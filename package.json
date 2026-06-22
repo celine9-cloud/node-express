@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "start": "node ./bin/www",
+    "import:sales": "node scripts/import-card-sales.js",
     "playwright:install": "playwright install chromium",
     "scrape:creditfinance": "node scripts/scrape-creditfinance.js"
   },
   "dependencies": {
+    "better-sqlite3": "^12.11.1",
     "cookie-parser": "^1.4.7",
     "debug": "^4.4.3",
     "dotenv": "^17.4.2",
