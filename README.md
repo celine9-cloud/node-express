@@ -50,11 +50,19 @@ SESSION_SECRET=change-this-long-random-secret
 KAKAO_CLIENT_ID=
 KAKAO_CLIENT_SECRET=
 KAKAO_REDIRECT_URI=http://localhost:3000/auth/kakao/callback
+WEATHER_CITY_NAME=서울
+WEATHER_LATITUDE=37.5665
+WEATHER_LONGITUDE=126.9780
+WEATHER_TIMEOUT_MS=1500
 ```
 
 `KAKAO_CLIENT_ID`가 비어 있으면 로컬 개발용 카카오 데모 계정으로 로그인됩니다. 실제 카카오 로그인을
 사용하려면 카카오 Developers에서 REST API 키와 Redirect URI를 등록한 뒤 위 값을 채워야 합니다.
 카카오 로그인도 먼저 필수 약관 동의를 거친 뒤 진행됩니다.
+
+홈 대시보드의 날씨 카드는 Open-Meteo API를 사용합니다. API 키 없이 현재 날씨를 가져올 수 있고,
+위치명/위도/경도는 `WEATHER_CITY_NAME`, `WEATHER_LATITUDE`, `WEATHER_LONGITUDE`로 바꿀 수 있습니다.
+날씨 API가 실패하면 화면에는 기본 안내 문구가 표시됩니다.
 
 카드 결제 화면은 실제 과금이 없는 테스트 승인 화면입니다. 카드번호는 서버에 저장하지 않고, 결제 기록에는
 카드 브랜드와 끝 4자리만 저장합니다. 실제 서비스에서는 Toss Payments, PortOne, NICE Payments 같은

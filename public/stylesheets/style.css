@@ -92,6 +92,14 @@ p {
   width: 30px;
 }
 
+.brand-sub {
+  color: var(--muted-soft);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin-left: -4px;
+}
+
 .site-nav {
   align-items: center;
   display: flex;
@@ -260,6 +268,29 @@ p {
 
 .primary-metric strong {
   font-size: 27px;
+}
+
+.weather-card {
+  align-items: center;
+  display: flex;
+  gap: 14px;
+  justify-content: space-between;
+}
+
+.weather-copy {
+  min-width: 0;
+}
+
+.weather-icon {
+  align-items: center;
+  background: #f2f6ff;
+  border-radius: 18px;
+  display: inline-flex;
+  flex: 0 0 auto;
+  font-size: 30px;
+  height: 58px;
+  justify-content: center;
+  width: 58px;
 }
 
 .card-link {

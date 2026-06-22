@@ -16,6 +16,21 @@ block content
         +money(dashboard.todaySales)
       a.card-link(href='/sales') 자세히 보기
 
+    .dashboard-card.weather-card
+      .weather-copy
+        span.card-label #{dashboard.weather.city} 날씨
+        strong
+          if dashboard.weather.available
+            | #{dashboard.weather.temperature}°C
+          else
+            | 확인 중
+        small
+          if dashboard.weather.available
+            | #{dashboard.weather.condition} · 습도 #{dashboard.weather.humidity}% · 바람 #{dashboard.weather.windSpeed}km/h
+          else
+            | #{dashboard.weather.condition}
+      .weather-icon= dashboard.weather.icon
+
     .metric-grid
       .dashboard-card
         span.card-label 매출 입금 예정
